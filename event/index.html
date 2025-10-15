@@ -1,0 +1,188 @@
+
+<!DOCTYPE html>
+<html lang="ko" dir="ltr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>일정 등록 – Enterprise Calendar Admin</title>
+<style>
+  :root{
+    --bg:#f6f7f9; --card:#fff; --grid:#e5e7eb; --text:#0f172a; --focus:#2563eb;
+  }
+  *{box-sizing:border-box} body{margin:24px; font-family:system-ui,-apple-system,Segoe UI,Roboto,Apple SD Gothic Neo,Noto Sans KR,sans-serif; background:var(--bg); color:var(--text)}
+  .wrap{max-width:880px; margin:0 auto}
+  h1{margin:0 0 16px; font-size:22px}
+  .card{background:var(--card); border:1px solid var(--grid); border-radius:14px; box-shadow:0 2px 6px rgba(0,0,0,.04)}
+  .row{display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:12px}
+  label{font-size:13px; color:#111827}
+  input,select,textarea{width:100%; padding:10px; border:1px solid var(--grid); border-radius:10px; font-size:14px; background:#fff}
+  textarea{min-height:80px}
+  .actions{display:flex; gap:8px; justify-content:flex-end}
+  .btn{border:1px solid var(--grid); background:#fff; border-radius:10px; padding:10px 12px; cursor:pointer; font-size:14px}
+  .btn.primary{background:#2563eb; color:#fff; border-color:#2563eb}
+  .btn:focus-visible{outline:3px solid var(--focus); outline-offset:2px}
+  .hint{font-size:12px; color:#475569}
+  .spacer{height:18px}
+  .list{margin-top:16px; padding:12px}
+  .item{padding:10px; border:1px solid var(--grid); border-radius:10px; margin-bottom:8px}
+  .item b{display:inline-block; min-width:120px}
+  .topbar{display:flex; align-items:center; justify-content:space-between; margin-bottom:16px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="topbar">
+    <h1>일정 등록 (Admin)</h1>
+    <a href="./index.html" class="btn">메인으로 돌아가기</a>
+  </div>
+
+  <form id="eventForm" class="card" style="padding:16px">
+    <div class="row">
+      <label>제목
+        <input name="title" required placeholder="예: Leadership Day" />
+      </label>
+      <label>카테고리
+        <select name="category" required>
+          <option value="행사">행사</option>
+          <option value="업무">업무</option>
+          <option value="신청">신청</option>
+        </select>
+      </label>
+      <label>팀(레인)
+        <select name="lane" required>
+          <!-- index.html에서 사용 중인 레인과 일치 -->
+          <option value="대표실">대표실</option>
+          <option value="전략">전략</option>
+          <option value="재경">재경</option>
+          <option value="P&C">P&amp;C</option>
+          <option value="IT">IT</option>
+          <option value="미션">미션</option>
+          <option value="교파">교파</option>
+          <option value="교미">교미</option>
+          <option value="비전">비전</option>
+          <option value="무브">무브</option>
+        </select>
+      </label>
+      <label>시작일
+        <input type="date" name="start" required />
+      </label>
+      <label>종료일
+        <input type="date" name="end" required />
+      </label>
+    </div>
+    <div class="spacer"></div>
+    <label>메모(선택)
+      <textarea name="note" placeholder="비고를 입력하세요."></textarea>
+    </label>
+    <div class="spacer"></div>
+    <div class="actions">
+      <button type="button" id="resetBtn" class="btn">초기화</button>
+      <button type="submit" class="btn primary">저장</button>
+    </div>
+    <p class="hint">※ 저장 시 Firestore의 <code>events</code> 컬렉션에 항목이 추가됩니다.</p>
+  </form>
+
+  <div class="card list">
+    <div style="display:flex;align-items:center;justify-content:space-between;">
+      <h2 style="margin:0;font-size:16px">최근 저장된 일정 (상위 10개)</h2>
+      <button id="reloadBtn" class="btn">새로고침</button>
+    </div>
+    <div id="recentList"></div>
+  </div>
+</div>
+
+<!-- Firebase (v10, CDN, module) -->
+<script type="module">
+  // === Firebase SDKs ===
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-app.js";
+  import { getFirestore, collection, addDoc, serverTimestamp, query, orderBy, limit, getDocs } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-firestore.js";
+
+  // === 프로젝트 설정(사용자 제공 값) ===
+  const firebaseConfig = {
+    apiKey: "AIzaSyBsTMadItNXG9YqmtFYr9bX6lbt0qIh9FQ",
+    authDomain: "dcp-page.firebaseapp.com",
+    projectId: "dcp-page",
+    storageBucket: "dcp-page.firebasestorage.app",
+    messagingSenderId: "1056273445903",
+    appId: "1:1056273445903:web:9e924f9bd476a860af1f7a",
+    measurementId: "G-CZS1G9M1KQ"
+  };
+
+  // === 초기화 ===
+  const app = initializeApp(firebaseConfig);
+  const db  = getFirestore(app);
+
+  // === DOM ===
+  const $ = (sel) => document.querySelector(sel);
+  const form = $('#eventForm');
+  const resetBtn = $('#resetBtn');
+  const reloadBtn = $('#reloadBtn');
+  const list = $('#recentList');
+
+  // === 저장 ===
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const fd = new FormData(form);
+    const title = (fd.get('title')||'').toString().trim();
+    const start = (fd.get('start')||'').toString();
+    const end   = (fd.get('end')||'').toString();
+    const category = (fd.get('category')||'').toString();
+    const lane  = (fd.get('lane')||'').toString();
+    const note  = (fd.get('note')||'').toString().trim();
+
+    if(!title || !start || !end){ alert('필수 항목을 입력해주세요.'); return; }
+    if(end < start){ alert('종료일이 시작일보다 빠를 수 없습니다.'); return; }
+
+    try{
+      await addDoc(collection(db, 'events'), {
+        title, start, end, category, lane, note,
+        createdAt: serverTimestamp(),
+        // 조회/그리드 보조 필드(옵션)
+        yearStart: Number(start.slice(0,4)),
+        monthStart: Number(start.slice(5,7)),
+        yearEnd: Number(end.slice(0,4)),
+        monthEnd: Number(end.slice(5,7)),
+      });
+      alert('저장되었습니다.');
+      form.reset();
+      await loadRecent();
+    }catch(err){
+      console.error(err);
+      alert('저장 중 오류가 발생했습니다. 콘솔을 확인해주세요.');
+    }
+  });
+
+  resetBtn.addEventListener('click', ()=> form.reset());
+
+  // === 최근 10개 로드(저장 확인용) ===
+  async function loadRecent(){
+    list.innerHTML = '불러오는 중...';
+    try{
+      const q = query(collection(db,'events'), orderBy('createdAt','desc'), limit(10));
+      const snap = await getDocs(q);
+      if(snap.empty){ list.innerHTML = '<p class="hint">저장된 일정이 없습니다.</p>'; return; }
+      list.innerHTML = '';
+      snap.forEach(doc=>{
+        const d = doc.data();
+        const el = document.createElement('div');
+        el.className = 'item';
+        el.innerHTML = `
+          <div><b>제목</b> ${d.title||''}</div>
+          <div><b>기간</b> ${d.start||''} ~ ${d.end||''}</div>
+          <div><b>팀/카테고리</b> ${d.lane||''} · ${d.category||''}</div>
+          ${d.note ? `<div><b>메모</b> ${d.note}</div>` : ''}
+        `;
+        list.appendChild(el);
+      });
+    }catch(err){
+      console.error(err);
+      list.innerHTML = '<p class="hint">목록 로드 중 오류가 발생했습니다.</p>';
+    }
+  }
+  reloadBtn.addEventListener('click', loadRecent);
+
+  // 첫 로드 때 목록 표시
+  loadRecent();
+</script>
+</body>
+</html>
