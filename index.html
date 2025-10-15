@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="ko" dir="ltr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<meta name="color-scheme" content="light" />
+<title>사내 포털 – 바로가기 + 전사일정</title>
+<style>
+  :root{
+    --bg:#f6f7f9; --folder:#ffffff; --line:rgba(0,0,0,.06); --card:#fff; --grid:#e5e7eb; --text:#0f172a;
+    --focus:#2563eb; --muted:#64748b; --shadow:0 12px 24px rgba(0,0,0,.06);
+    --lane-h:64px; --lane-gap:1px; --left-col:160px; --header-h:34px; --cell-pad:8px;
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{margin:24px; font-family:system-ui,-apple-system,Segoe UI,Roboto,Apple SD Gothic Neo,Noto Sans KR,sans-serif; background:var(--bg); color:var(--text)}
+  img{max-width:100%; display:block}
+  a{color:inherit; text-decoration:none}
+  a:focus-visible,button:focus-visible{outline:3px solid var(--focus); outline-offset:3px; border-radius:8px}
+  .visually-hidden{position:absolute!important;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+
+  h1{margin:0 0 20px; font-size:18px}
+  h2{margin:28px 0 12px; font-size:16px}
+  .container{max-width:1200px; margin:0 auto}
+  .grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:24px}
+
+  /* 폴더 카드 */
+  .folder{background:var(--folder);border-radius:28px;padding:18px 16px;border:1px solid var(--line);
+          box-shadow:var(--shadow), inset 0 1px 0 rgba(255,255,255,.7); transition:transform .15s, box-shadow .15s}
+  .folder:hover{ transform:translateY(-2px); box-shadow:0 16px 30px rgba(0,0,0,.08), inset 0 1px 0 rgba(255,255,255,.7) }
+  .apps{display:grid; grid-template-columns:repeat(3,1fr); gap:10px}
+  .app{display:flex; align-items:center; justify-content:center; flex-direction:column; color:var(--text); gap:6px; min-height:92px}
+  .badge{width:58px;height:58px;border-radius:16px;display:flex;align-items:center;justify-content:center;box-shadow:inset 0 1px 0 rgba(255,255,255,.25), 0 6px 14px rgba(0,0,0,.08);transition:transform .12s, box-shadow .12s; font-weight:700; font-size:12px; color:#fff}
+  .app:hover .badge{ transform:translateY(-1px); box-shadow:inset 0 1px 0 rgba(255,255,255,.25), 0 10px 18px rgba(0,0,0,.12) }
+  .label{font-size:10px;color:#334155;text-align:center;max-width:84px;line-height:1.2}
+  .c-red{background:linear-gradient(135deg,#ff6a7a,#ff3d3d)}
+  .c-purple{background:linear-gradient(135deg,#a77bff,#7a4cff)}
+  .c-sky{background:linear-gradient(135deg,#79b6ff,#4a8dff)}
+  .c-orange{background:linear-gradient(135deg,#ffa552,#ff7a1a)}
+  .c-green{background:linear-gradient(135deg,#55d6a9,#26b87a)}
+  .c-blue{background:linear-gradient(135deg,#6e8cff,#3b5bff)}
+  .c-teal{background:linear-gradient(135deg,#64e0e3,#28c3d6)}
+  .c-gray{background:linear-gradient(135deg,#c9ced6,#9aa3ad)}
+  .folder-label{display:flex;align-items:center;justify-content:center;gap:6px;margin-top:8px;font-size:14px}
+  .folder-label .emoji{display:none !important;} /* 이모지 제거 */
+
+  /* 카드 */
+  .card{background:var(--card);border:1px solid var(--grid);border-radius:14px;box-shadow:0 2px 6px rgba(0,0,0,.04)}
+
+  /* 컨트롤 */
+  .controls{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:10px 0 6px}
+  .seg{display:inline-flex;border:1px solid var(--grid);border-radius:10px;overflow:hidden}
+  .seg button{padding:6px 10px;border:0;background:#fff;font-size:12px;cursor:pointer}
+  .seg button[aria-pressed="true"]{background:#eef2ff}
+  .pill{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--grid);border-radius:999px;padding:6px 10px;background:#fff;font-size:12px;cursor:pointer}
+  .pill[aria-pressed="true"]{background:#dcfce7}
+  .scroll-x{display:flex;gap:8px;overflow:auto;padding-bottom:2px}
+
+  /* 캘린더 상단 (Hero) */
+  .sp-hero{margin:28px 0 8px}
+  .sp-breadcrumb{font-size:12px;color:#6b7280;display:flex;gap:8px;align-items:center}
+  .sp-breadcrumb .sep{opacity:.5}
+  .sp-titlebar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:6px}
+  .sp-titlebar h2{margin:0;font-size:22px}
+  .sp-sub{margin:6px 0 0;color:#64748b;font-size:13px}
+  .btn{border:1px solid var(--grid);background:#fff;border-radius:10px;padding:8px 12px;font-size:13px;cursor:pointer}
+  .btn.ghost{background:#fafafa}
+  .btn.primary{background:#2563eb;color:#fff;border-color:#2563eb}
+  .btn[aria-pressed="true"]{box-shadow:inset 0 0 0 2px #2563eb33}
+
+  /* ==== 제목 라인만 하이라이트 ==== */
+  .title-strip{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:20px 18px; margin:0 0 14px; border-radius:14px; color:#fff;
+    box-shadow:0 8px 20px rgba(17,38,94,.18);
+    background:linear-gradient(135deg,#2a5eec,#6a8ef2);
+  }
+  .title-strip .btn.ghost{background:rgba(255,255,255,.16); color:#fff; border-color:transparent}
+  .title-strip .btn.ghost:hover{background:rgba(255,255,255,.24)}
+
+  /* 연간 매트릭스 */
+  .year-grid{position:relative;overflow:hidden}
+  .header,.row{display:grid;grid-template-columns:var(--left-col) repeat(12,1fr)}
+  .header div,.row div{padding:var(--cell-pad);border-bottom:1px solid var(--grid)}
+  .header{background:#f7f8fa;font-size:12px;font-weight:600;position:sticky;top:0;z-index:2}
+  .lane-name{padding:10px 12px;border-right:1px solid var(--grid);display:flex;align-items:center;font-size:12px;font-weight:600;background:#f9fafb;color:#111827}
+  .cell{height:var(--lane-h);border-left:1px solid var(--grid)}
+  .row .cell:first-child{border-left:none}
+  .grid-lines{position:absolute;inset:var(--header-h) 0 0 var(--left-col);display:grid;grid-template-columns:repeat(12,1fr);pointer-events:none}
+  .grid-lines div{border-left:1px dashed #e6e6e6}
+  .bar-layer{position:absolute;inset:var(--header-h) 0 0 var(--left-col)}
+  .event{position:absolute;height:26px;border-radius:8px;padding:4px 8px;font-size:12px;line-height:18px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer;box-shadow:0 1px 3px rgba(0,0,0,.08);border:1px solid rgba(0,0,0,.05);font-weight:600}
+  .t-대표실{background:#e0f2fe}.t-전략{background:#d1fae5}.t-재경{background:#fef9c3}.t-P&C{background:#fee2e2}.t-IT{background:#e5e7eb}
+  .t-미션{background:#f5e8ff}.t-교파{background:#e7fff2}.t-교미{background:#fff0e5}.t-비전{background:#ffe7fb}.t-무브{background:#e0e7ff}
+  .today-line{position:absolute;top:var(--header-h);bottom:0;width:2px;background:#2563eb33;pointer-events:none}
+
+  /* 접근성 */
+  @media (prefers-reduced-motion: reduce){
+    .folder,.badge{transition:none}
+  }
+  @media print{
+    body{margin:0}
+    .grid,.imgbox,.hint,h1,.controls,.sp-hero{display:none}
+    .year-grid{border:0}
+  }
+</style>
+</head>
+<body>
+<div class="container" role="main">
+
+  <!-- 제목 한 줄만 하이라이트 -->
+  <h1 class="title-strip">
+    <span>바로가기</span>
+    <button id="app-links-btn" class="btn ghost" type="button">앱 링크</button>
+  </h1>
+
+  <!-- 카테고리 그리드 -->
+  <div class="grid" id="quick-grid">
+    <!-- 🐬 현황 -->
+    <section aria-labelledby="sec-Dashboard">
+      <div class="folder" role="group" aria-labelledby="sec-Dashboard">
+        <div class="apps">
+          <a class="app" data-key="CDSP" href="https://compassionkorea.lightning.force.com/lightning/r/Dashboard/01Z2x00000086p2EAA/view?queryScope=userFolders" target="_blank" rel="noopener noreferrer"><div class="badge c-purple">CDSP</div><div class="label">CDSP</div></a>
+          <a class="app" data-key="KRI" href="https://compassionkorea.lightning.force.com/lightning/r/Dashboard/01Z2x000000QEwMEAW/view" target="_blank" rel="noopener noreferrer"><div class="badge c-red">KRI</div><div class="label">KRI</div></a>
+          <a class="app" data-key="LE" href="https://compassionkorea.sharepoint.com/:x:/s/maketing/EXVOhXaIRMNBvzScNMHEycMBXkXIgNO1UNBRMcdAStnOWQ?e=4EfFYq" target="_blank" rel="noopener noreferrer"><div class="badge c-blue">LE</div><div class="label">LE</div></a>
+          <a class="app" data-key="Scorecard" href="https://one.compassion.com/sites/finance/SitePageModern/194296/global-scorecard" target="_blank" rel="noopener noreferrer"><div class="badge c-green">GS</div><div class="label">Global Scorecard</div></a>
+          <span></span><span></span><span></span><span></span><span></span>
+        </div>
+      </div>
+      <div class="folder-label" id="sec-dashboard"><span>현황</span></div>
+    </section>
+
+    <!-- ❤️ P&C -->
+    <section aria-labelledby="sec-pc">
+      <div class="folder" role="group" aria-labelledby="sec-pc">
+        <div class="apps">
+          <a class="app" data-key="인사근태" href="http://gwa.compassion.or.kr/gw/bizbox.do" target="_blank" rel="noopener noreferrer" title="인사근태">
+            <div class="badge c-red"><span aria-hidden="true">근태</span></div><div class="label">인사근태</div>
+          </a>
+          <a class="app" data-key="조직도" href="https://compassionkorea.sharepoint.com/:b:/s/share/EVwEjJlrN2JGs9_tak31NVABfFJgdYNMhtQGLq0ArpJZNA?e=HZ27fL" target="_blank" rel="noopener noreferrer"><div class="badge c-sky">OC</div><div class="label">조직도</div></a>
+          <a class="app" data-key="연락처" href="https://compassionkorea.sharepoint.com/:b:/s/share/EW4HfbQ0aUdEsSm7fBLWAHMBbWviKQ6R6FUxvvXu7P3k7Q?e=padbKz" target="_blank" rel="noopener noreferrer"><div class="badge c-purple">연락</div><div class="label">연락처</div></a>
+          <a class="app" data-key="사번" href="#" target="_blank" rel="noopener noreferrer"><div class="badge c-orange">ID</div><div class="label">사번</div></a>
+          <a class="app" data-key="LMS 교육" href="https://hrd.compassion.or.kr/index.do" target="_blank" rel="noopener noreferrer"><div class="badge c-green">LMS</div><div class="label">LMS 교육</div></a>
+          <span></span><span></span><span></span>
+        </div>
+      </div>
+      <div class="folder-label" id="sec-pc"><span>P&amp;C</span></div>
+    </section>
+
+    <!-- 🍑 재경 -->
+    <section aria-labelledby="sec-fin">
+      <div class="folder" role="group" aria-labelledby="sec-fin">
+        <div class="apps">
+          <a class="app" data-key="그룹웨어" href="http://gwa.compassion.or.kr/gw/userMain.do" target="_blank" rel="noopener noreferrer"><div class="badge c-green">GW</div><div class="label">그룹웨어</div></a>
+          <a class="app" data-key="Bizplay" href="https://www.bizplay.co.kr/main_0003_01.act" target="_blank" rel="noopener noreferrer"><div class="badge c-orange">비플</div><div class="label">Bizplay</div></a>
+          <a class="app" data-key="Chat FIN" href="https://handy-reply-c1d.notion.site/ChatFIN-5b4bfe383a864a658cd59dd7de0bc671" target="_blank" rel="noopener noreferrer"><div class="badge c-teal">FIN</div><div class="label">Chat FIN</div></a>
+          <span></span><span></span><span></span><span></span><span></span><span></span>
+        </div>
+      </div>
+      <div class="folder-label" id="sec-fin"><span>재경</span></div>
+    </section>
+
+    <!-- ✔ 신청/접수 -->
+    <section aria-labelledby="sec-apply">
+      <div class="folder" role="group" aria-labelledby="sec-apply">
+        <div class="apps">
+          <a class="app" data-key="Blue line" href="https://docs.google.com/forms/d/1SyKV9_o6ctBeClGW8wDpPnGf94RvEZqWaYfZ9e6cgxg/viewform?edit_requested=true" target="_blank" rel="noopener noreferrer"><div class="badge c-blue">BL</div><div class="label">Blue line</div></a>
+          <a class="app" data-key="CS" href="https://compassionkorea-my.sharepoint.com/:x:/g/personal/dalim_compassion_or_kr/EQ_Gs9DNgN9PiUWxnUlVemoB07hunygEASEHkVd9av4EOQ?e=wvJixF" target="_blank" rel="noopener noreferrer"><div class="badge c-orange">CS</div><div class="label">CS신청</div></a>
+          <a class="app" data-key="L&L" href="https://forms.office.com/r/TtTWjVKUGt" target="_blank" rel="noopener noreferrer"><div class="badge c-teal">L&L</div><div class="label">LUNCH & LEARN</div></a>
+          <a class="app" data-key="IT HELP" href="https://compassionkorea.lightning.force.com/lightning/o/ITServiceRequest__c/home" target="_blank" rel="noopener noreferrer"><div class="badge c-sky">IT</div><div class="label">IT HELP</div></a>
+          <a class="app" data-key="OA 서비스" href="https://forms.office.com/pages/responsepage.aspx?id=F3AWrGQVgEyEyvVroUgajahITEsIIu5IoQ0dkMJU9PRUQ0hNSjY3NEtQWTJPWktSTzZVSE04OFE2SCQlQCN0PWcu&route=shorturl" target="_blank" rel="noopener noreferrer"><div class="badge c-purple">OA</div><div class="label">OA 서비스</div></a>
+          <a class="app" data-key="업무요청" href="https://compassionkorea.sharepoint.com/sites/request" target="_blank" rel="noopener noreferrer"><div class="badge c-green">요청</div><div class="label">업무요청</div></a>
+          <span></span><span></span><span></span><span></span><span></span><span></span>
+        </div>
+      </div>
+      <div class="folder-label" id="sec-apply"><span>신청/접수</span></div>
+    </section>
+
+    <!-- 🐬 브랜딩 -->
+    <section aria-labelledby="sec-brand">
+      <div class="folder" role="group" aria-labelledby="sec-brand">
+        <div class="apps">
+          <a class="app" data-key="브랜드 허브" href="https://compassionkorea.sharepoint.com/sites/BrandHub" target="_blank" rel="noopener noreferrer"><div class="badge c-purple">허브</div><div class="label">브랜드 허브</div></a>
+          <a class="app" data-key="유튜브" href="https://www.youtube.com/@CompassionKR" target="_blank" rel="noopener noreferrer"><div class="badge c-red">YouTube</div><div class="label">유튜브</div></a>
+          <a class="app" data-key="숏츠" href="https://www.youtube.com/@CompassionKR/shorts" target="_blank" rel="noopener noreferrer"><div class="badge c-blue">숏츠</div><div class="label">숏츠</div></a>
+          <a class="app" data-key="네이버 포스트" href="https://blog.naver.com/prologue/PrologueList.naver?blogId=compassionkorea&skinType=&skinId=&from=menu&userSelectMenu=true" target="_blank" rel="noopener noreferrer"><div class="badge c-green">NAVER</div><div class="label">네이버 포스트</div></a>
+          <span></span><span></span><span></span><span></span><span></span>
+        </div>
+      </div>
+      <div class="folder-label" id="sec-brand"><span>브랜딩</span></div>
+    </section>
+
+    <!-- 💜 Website -->
+    <section aria-labelledby="sec-web">
+      <div class="folder" role="group" aria-labelledby="sec-web">
+        <div class="apps">
+          <a class="app" data-key="글로벌 ONE" href="https://one.compassion.com" target="_blank" rel="noopener noreferrer"><div class="badge c-teal">ONE</div><div class="label">글로벌 ONE</div></a>
+          <a class="app" data-key="CSF" href="https://compassionkorea.lightning.force.com/lightning/page/home" target="_blank" rel="noopener noreferrer"><div class="badge c-gray">CSF</div><div class="label">CSF</div></a>
+          <a class="app" data-key="홈페이지" href="https://www.compassion.or.kr/" target="_blank" rel="noopener noreferrer"><div class="badge c-sky">CK</div><div class="label">한국컴패션</div></a>
+          <a class="app" data-key="US" href="http://www.compassion.com/" target="_blank" rel="noopener noreferrer"><div class="badge c-sky">US</div><div class="label">컴패션 US</div></a>
+          <a class="app" data-key="AU" href="https://www.compassion.com.au/" target="_blank" rel="noopener noreferrer"><div class="badge c-sky">AU</div><div class="label">컴패션 AU</div></a>
+          <a class="app" data-key="UK" href="https://www.compassionuk.org/" target="_blank" rel="noopener noreferrer"><div class="badge c-sky">UK</div><div class="label">컴패션 UK</div></a>
+          <a class="app" data-key="CA" href="https://www.compassion.ca/" target="_blank" rel="noopener noreferrer"><div class="badge c-sky">CA</div><div class="label">컴패션 CA</div></a>
+          <span></span><span></span><span></span><span></span><span></span><span></span>
+        </div>
+      </div>
+      <div class="folder-label" id="sec-web"><span>Website</span></div>
+    </section>
+
+    <!-- 🧩 타기관 -->
+    <section aria-labelledby="sec-ngo">
+      <div class="folder" role="group" aria-labelledby="sec-ngo">
+        <div class="apps">
+          <a class="app" data-key="월드비전" href="https://www.worldvision.or.kr/" target="_blank" rel="noopener noreferrer" title="월드비전"><div class="badge c-orange">WV</div><div class="label">월드비전</div></a>
+          <a class="app" data-key="유니세프" href="https://www.unicef.or.kr/" target="_blank" rel="noopener noreferrer" title="유니세프"><div class="badge c-sky">UNICEF</div><div class="label">유니세프</div></a>
+          <a class="app" data-key="굿네이버스" href="https://www.goodneighbors.kr/" target="_blank" rel="noopener noreferrer" title="굿네이버스"><div class="badge c-green">GN</div><div class="label">굿네이버스</div></a>
+          <a class="app" data-key="세이브더칠드런" href="https://www.sc.or.kr/" target="_blank" rel="noopener noreferrer" title="세이브더칠드런"><div class="badge c-red">SC</div><div class="label">세이브</div></a>
+          <a class="app" data-key="기아대책" href="https://www.kfhi.or.kr/" target="_blank" rel="noopener noreferrer" title="기아대책"><div class="badge c-purple">KFHI</div><div class="label">기아대책</div></a>
+          <a class="app" data-key="초록우산" href="https://www.childfund.or.kr/main.do" target="_blank" rel="noopener noreferrer" title="초록우산 어린이재단"><div class="badge c-teal">CF</div><div class="label">초록우산</div></a>
+          <a class="app" data-key="밀알" href="https://miral.org/main/main.asp" target="_blank" rel="noopener noreferrer" title="밀알 복지재단"><div class="badge c-gray">밀알</div><div class="label">밀알</div></a>
+          <span></span><span></span>
+        </div>
+      </div>
+      <div class="folder-label" id="sec-ngo"><span>타기관</span></div>
+    </section>
+  </div>
+
+  <!-- ====================== 전사일정&행사 ====================== -->
+  <section class="sp-hero" aria-labelledby="ecal-title">
+    <div class="sp-breadcrumb" aria-label="breadcrumb">
+      <span>About Us</span> <span class="sep">/</span>
+      <span>Enterprise Calendar</span>
+    </div>
+    <div class="sp-titlebar">
+      <h2 id="ecal-title">Enterprise Calendar</h2>
+      <div class="sp-actions" role="toolbar" aria-label="Calendar actions">
+        <button type="button" class="btn ghost" id="btn-compact" aria-pressed="false" title="밀집 보기">Compact</button>
+        <button type="button" class="btn" id="btn-export" title="CSV로 내보내기">Export</button>
+        <a class="btn primary" id="btn-add" href="event-admin.html" title="일정 추가">Add Event</a>
+      </div>
+    </div>
+    <p class="sp-sub">전사 일정과 주요 행사 일정을 월 단위로 한눈에 확인하세요.</p>
+  </section>
+
+  <!-- 캘린더 스냅샷(선택) -->
+  <div class="card imgbox" aria-label="전사 일정 이미지 미리보기">
+    <img id="calendar-thumb" src="enterprise-calendar.png" alt="Enterprise Calendar" loading="lazy" onclick="openImage()" onload="calendarImageReady()" onerror="calendarImageMissing()" />
+  </div>
+
+  <!-- 보기 전환 & 필터 -->
+  <div class="controls" aria-label="보기 및 필터">
+    <div class="seg" role="tablist" aria-label="보기 전환">
+      <button id="btn-view-cat" role="tab" aria-selected="true" aria-pressed="true">카테고리별</button>
+      <button id="btn-view-team" role="tab" aria-selected="false" aria-pressed="false">팀별</button>
+    </div>
+    <div id="filter-cat" class="scroll-x" aria-label="카테고리 선택"></div>
+    <div id="filter-team" class="scroll-x" aria-label="팀 선택" style="display:none"></div>
+  </div>
+
+  <!-- 연간 매트릭스 -->
+  <div class="card year-grid" style="margin-top:8px" id="year-grid" aria-labelledby="year-title">
+    <div id="year-title" class="visually-hidden" aria-hidden="true">연간 일정 매트릭스</div>
+    <div class="header">
+      <div style="border-right:1px solid var(--grid)"></div>
+      <div>1월</div><div>2월</div><div>3월</div><div>4월</div><div>5월</div><div>6월</div>
+      <div>7월</div><div>8월</div><div>9월</div><div>10월</div><div>11월</div><div>12월</div>
+    </div>
+    <div id="lane-rows"></div>
+    <div class="grid-lines" aria-hidden="true">
+      <div></div><div></div><div></div><div></div><div></div><div></div>
+      <div></div><div></div><div></div><div></div><div></div><div></div>
+    </div>
+    <div class="today-line" id="today-line" aria-hidden="true"></div>
+    <div class="bar-layer" id="bar-layer"></div>
+  </div>
+  <p class="hint">※ <code>events</code>와 앱 링크는 브라우저 로컬에 저장됩니다.</p>
+</div>
+
+<!-- 앱 링크 편집 모달 -->
+<div id="app-links-modal" aria-hidden="true" role="dialog" aria-modal="true"
+     style="position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:center;justify-content:center;padding:20px;z-index:60">
+  <div style="background:#fff;border:1px solid var(--grid);border-radius:14px;max-width:720px;width:100%;padding:16px">
+    <h3 style="margin:0 0 8px">앱 링크 붙여넣기</h3>
+    <p class="muted" style="margin:0 0 8px">
+      형식: <code>key,url</code> — 예) <code>조직도,https://...</code>
+    </p>
+    <textarea id="app-links-text" style="width:100%;height:200px;border:1px solid var(--grid);border-radius:10px;padding:8px"
+      placeholder="key,url&#10;조직도,https://..."></textarea>
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:10px">
+      <button id="app-links-cancel" class="btn" type="button">취소</button>
+      <button id="app-links-apply" class="btn primary" type="button">적용</button>
+    </div>
+  </div>
+</div>
+
+<!-- 공용 모달(캘린더 이미지 보기) -->
+<div id="modal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="m-title" aria-describedby="m-when m-dept m-note" style="display:none;align-items:center;justify-content:center;position:fixed;inset:0;background:rgba(0,0,0,.45);padding:20px">
+  <div class="box" style="background:#fff;border-radius:14px;padding:18px;max-width:560px;width:100%;border:1px solid var(--grid);box-shadow:0 10px 30px rgba(0,0,0,.15)">
+    <h3 id="m-title" style="margin:0 0 8px;font-size:16px"></h3>
+    <p id="m-when" style="margin:6px 0 0;font-size:13px;color:#334155;white-space:pre-line"></p>
+    <p id="m-dept" style="margin:6px 0 0;font-size:13px;color:#334155;white-space:pre-line"></p>
+    <p id="m-note" style="margin:6px 0 0;font-size:13px;color:#334155;white-space:pre-line"></p>
+    <div class="modal-actions" style="display:flex;justify-content:flex-end;gap:8px;margin-top:16px"><button class="close btn" id="closeBtn">닫기 (Esc)</button></div>
+  </div>
+</div>
+
+<script>
+  /* ---------- 전사일정 ---------- */
+  const CATEGORIES=["행사","업무","신청"];
+  const LANES=["대표실","전략","재경","P&C","IT","미션","교파","교미","비전","무브"];
+  const LS_KEY='gate:events:v1';
+  const $=(s)=>document.querySelector(s);
+  const KST=new Intl.DateTimeFormat('ko-KR',{timeZone:'Asia/Seoul',dateStyle:'medium'});
+  const fmtRange=(s,e)=>`${KST.format(s)} ~ ${KST.format(e)}`;
+  const parseDate=(s)=>{const [y,m,d]=s.split('-').map(Number);return new Date(y,m-1,d);};
+
+  // 레인 행 만들기
+  const laneRows=$("#lane-rows");
+  LANES.forEach(name=>{
+    const row=document.createElement("div");
+    row.className="row";
+    row.innerHTML=`<div class="lane-name">${name}</div>`+Array.from({length:12}).map(()=>`<div class="cell"></div>`).join("");
+    laneRows.appendChild(row);
+  });
+
+  // 필터
+  const catWrap=$("#filter-cat"), teamWrap=$("#filter-team");
+  let activeCategory='전체', activeTeam='전체';
+  function renderFilterPills(){
+    catWrap.innerHTML='';
+    ["전체",...CATEGORIES].forEach(cat=>{
+      const b=document.createElement('button');
+      b.className='pill'; b.type='button'; b.textContent=cat;
+      b.setAttribute('aria-pressed', String(activeCategory===cat));
+      b.onclick=()=>{activeCategory=cat;refresh();renderFilterPills();};
+      catWrap.appendChild(b);
+    });
+    teamWrap.innerHTML='';
+    ["전체",...LANES].forEach(team=>{
+      const b=document.createElement('button');
+      b.className='pill'; b.type='button'; b.textContent=team;
+      b.setAttribute('aria-pressed', String(activeTeam===team));
+      b.onclick=()=>{activeTeam=team;refresh();renderFilterPills();};
+      teamWrap.appendChild(b);
+    });
+  }
+  document.getElementById('btn-view-cat').onclick=()=>{catWrap.style.display='flex';teamWrap.style.display='none';};
+  document.getElementById('btn-view-team').onclick=()=>{catWrap.style.display='none';teamWrap.style.display='flex';};
+
+  // 기본 이벤트 (로컬 저장 우선)
+  const DEFAULT_EVENTS=[
+    { title:"Global Budget", start:"2025-02-10", end:"2025-03-20", lane:"전략", category:"업무", note:"PGS~PGS" },
+    { title:"Global Connection", start:"2025-03-01", end:"2025-03-31", lane:"전략", category:"행사", note:"전사 커뮤니케이션" },
+    { title:"Mission Update", start:"2025-05-01", end:"2025-05-31", lane:"미션", category:"행사", note:"미션 리프레시" },
+    { title:"H1 Forecast 정리", start:"2025-04-01", end:"2025-04-30", lane:"재경", category:"업무", note:"상반기 FCST" },
+    { title:"H2 Forecast 준비", start:"2025-09-01", end:"2025-09-30", lane:"재경", category:"업무", note:"하반기 FCST" },
+    { title:"Performance Review(H1)", start:"2025-06-01", end:"2025-06-30", lane:"P&C", category:"업무", note:"평가/보상" },
+    { title:"Leadership Day", start:"2025-10-01", end:"2025-10-07", lane:"P&C", category:"행사", note:"리더십 워크샵" },
+    { title:"보안/정책 점검", start:"2025-07-01", end:"2025-07-31", lane:"IT", category:"업무", note:"정기 점검" },
+    { title:"사내 교육 위크", start:"2025-04-07", end:"2025-04-11", lane:"비전", category:"신청", note:"직무/기술 교육 (사전 신청)" },
+    { title:"신제품 론칭 캠페인", start:"2025-06-01", end:"2025-07-15", lane:"교미", category:"업무", note:"멀티채널" },
+    { title:"고객 컨퍼런스", start:"2025-11-10", end:"2025-11-12", lane:"무브", category:"행사", note:"주요 고객 초청" }
+  ];
+  function loadEvents(){try{const s=localStorage.getItem(LS_KEY);return s?JSON.parse(s):DEFAULT_EVENTS;}catch(e){return DEFAULT_EVENTS;}}
+  function saveEvents(list){localStorage.setItem(LS_KEY, JSON.stringify(list));}
+  let events=loadEvents();
+
+  // 바 렌더
+  const layer=document.getElementById("bar-layer");
+  const todayLine=document.getElementById("today-line");
+  function monthIndex(d){return d.getMonth();}
+  function monthSpan(s,e){const months=(e.getFullYear()-s.getFullYear())*12+(e.getMonth()-s.getMonth())+1;return Math.max(1,months);}
+  function laneY(name){const idx=LANES.indexOf(name);const header=34;const laneH=parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--lane-h'));const gap=parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--lane-gap'));return header+idx*(laneH+gap);}
+  function renderTodayLine(){const now=new Date();const m=now.getMonth();const d=now.getDate();const dim=new Date(now.getFullYear(),m+1,0).getDate();const frac=m+(d-1)/dim;const leftPct=(frac/12)*100;todayLine.style.left=`calc(${leftPct}% + var(--left-col))`;}
+  function filtered(list){return list.filter(ev=>{const okCat=(activeCategory==='전체')||(ev.category===activeCategory);const okTeam=(activeTeam==='전체')||(ev.lane===activeTeam);return okCat&&okTeam;});}
+  function renderBars(){
+    layer.innerHTML='';
+    filtered(events).forEach(ev=>{
+      const s=parseDate(ev.start), e=parseDate(ev.end);
+      const sIdx=monthIndex(s), span=monthSpan(s,e);
+      const bar=document.createElement('div');
+      bar.className=`event t-${ev.lane}`;
+      bar.style.left=`calc(${(sIdx/12)*100}% + 6px)`;
+      bar.style.top=`${laneY(ev.lane) + 18}px`;
+      bar.style.width=`calc(${(span/12)*100}% - 12px)`;
+      bar.setAttribute('role','button');
+      bar.setAttribute('tabindex','0');
+      bar.setAttribute('aria-label',`${ev.lane} · ${ev.title} · ${ev.start}~${ev.end} · ${ev.category}`);
+      bar.textContent=ev.title;
+      bar.addEventListener('click',()=>openModal(ev));
+      bar.addEventListener('keydown',(e)=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();openModal(ev);}});
+      layer.appendChild(bar);
+    });
+    renderTodayLine();
+  }
+
+  function openModal(ev){
+    document.getElementById("m-title").textContent=ev.title;
+    const s=parseDate(ev.start), e=parseDate(ev.end);
+    document.getElementById("m-when").textContent=`일정: ${fmtRange(s,e)}`;
+    document.getElementById("m-dept").textContent=`팀: ${ev.lane} · 카테고리: ${ev.category}`;
+    document.getElementById("m-note").textContent=ev.note ? `메모: ${ev.note}` : '';
+    const modal=document.getElementById("modal");
+    modal.style.display='flex';
+    modal.setAttribute('aria-hidden','false');
+    document.body.style.overflow='hidden';
+    document.getElementById("closeBtn").focus();
+  }
+  function closeModal(){
+    const modal=document.getElementById("modal");
+    modal.style.display='none';
+    modal.setAttribute('aria-hidden','true');
+    document.body.style.overflow='';
+  }
+  document.getElementById("modal").addEventListener('click', (e)=>{ if(e.target.id==='modal') closeModal(); });
+  document.addEventListener('keydown', (e)=>{ if(e.key==='Escape') closeModal(); });
+  document.getElementById("closeBtn").addEventListener('click', closeModal);
+
+  // 초기 렌더
+  function refresh(){ renderBars(); }
+  renderFilterPills();
+  refresh();
+  window.addEventListener('resize', refresh);
+
+  // Export / 이미지 보기
+  document.getElementById('btn-export').addEventListener('click', ()=>{
+    const headers=["title","start","end","lane","category","note"];
+    const rows=[headers.join(",")].concat(
+      events.map(ev=>headers.map(h=>{
+        const val=(ev[h]??"").toString().replace(/"/g,'""');
+        return /[",\n]/.test(val)?`"${val}"`:val;
+      }).join(","))
+    );
+    const csv=rows.join("\n");
+    const blob=new Blob([csv],{type:"text/csv;charset=utf-8;"});
+    const url=URL.createObjectURL(blob);
+    const a=document.createElement('a');
+    a.href=url; a.download='enterprise-calendar.csv';
+    document.body.appendChild(a); a.click(); a.remove();
+    URL.revokeObjectURL(url);
+  });
+
+  // 캘린더 이미지 보기
+  let imageAvailable=false;
+  function calendarImageReady(){ imageAvailable=true; }
+  function calendarImageMissing(){ imageAvailable=false; document.querySelector('.imgbox')?.remove(); }
+  function openImage(){
+    if(!imageAvailable) return;
+    document.getElementById("m-title").textContent='전사일정&행사 (이미지)';
+    document.getElementById("m-when").innerHTML='<img src="enterprise-calendar.png" style="width:100%;border:1px solid #e5e7eb;border-radius:8px" alt="calendar" />';
+    document.getElementById("m-dept").textContent='';
+    document.getElementById("m-note").textContent='';
+    document.getElementById("modal").style.display='flex';
+    document.getElementById("modal").setAttribute('aria-hidden','false');
+    document.body.style.overflow='hidden';
+    document.getElementById("closeBtn").focus();
+  }
+  window.calendarImageReady=calendarImageReady;
+  window.calendarImageMissing=calendarImageMissing;
+  window.openImage=openImage;
+
+  /* ---------- 상단 앱 링크 매핑 (로컬 저장) ---------- */
+  const APP_LINKS_LS='portal:app_links:v2';
+  const APP_KEYS=["인사근태","조직도","연락처","사번","LMS 교육","Blue line","그룹웨어","Bizplay","Chat FIN",
+                  "브랜드 허브","유튜브","네이버 포스트","숏츠","글로벌 ONE","CSF","홈페이지","US","AU","UK","CA",
+                  "월드비전","유니세프","굿네이버스","세이브더칠드런","기아대책","초록우산","밀알","Scorecard","CDSP","KRI","LE","IT HELP","OA 서비스","업무요청","L&L","CS"];
+  const APP_LINKS_DEFAULT={
+    "조직도":"https://compassionkorea.sharepoint.com/:b:/s/share/EVwEjJlrN2JGs9_tak31NVABfFJgdYNMhtQGLq0ArpJZNA?e=bXsScl"
+  };
+  function loadAppLinks(){try{const s=localStorage.getItem(APP_LINKS_LS);return s?JSON.parse(s):{...APP_LINKS_DEFAULT};}catch(e){return {...APP_LINKS_DEFAULT};}}
+  function saveAppLinks(map){localStorage.setItem(APP_LINKS_LS,JSON.stringify(map));}
+  function applyAppLinks(){
+    const map=loadAppLinks();
+    document.querySelectorAll('.app[data-key]').forEach(a=>{
+      const key=a.getAttribute('data-key'); const url=map[key];
+      if(url){ a.href=url; a.target='_blank'; a.rel='noopener noreferrer'; a.title=(a.title||key)+' (열기)'; }
+    });
+  }
+  applyAppLinks();
+
+  // 링크 편집 모달
+  const $alb=document.getElementById('app-links-btn'),
+        $alm=document.getElementById('app-links-modal'),
+        $alt=document.getElementById('app-links-text'),
+        $ala=document.getElementById('app-links-apply'),
+        $alc=document.getElementById('app-links-cancel');
+  function openAL(){
+    $alm.style.display='flex';
+    $alm.setAttribute('aria-hidden','false');
+    const map=loadAppLinks();
+    $alt.value='key,url\n'+APP_KEYS.map(k=>`${k},${map[k]||''}`).join('\n');
+    $alt.focus();
+  }
+  function closeAL(){
+    $alm.style.display='none';
+    $alm.setAttribute('aria-hidden','true');
+  }
+  $alb.addEventListener('click',openAL);
+  $alc.addEventListener('click',closeAL);
+  $alm.addEventListener('click',e=>{ if(e.target.id==='app-links-modal') closeAL(); });
+  document.addEventListener('keydown',e=>{ if(e.key==='Escape'&&$alm.style.display==='flex') closeAL(); });
+
+  function parseLinksCSV(text){
+    const rows=text.trim().split(/\r?\n/).map(r=>r.split(',').map(s=>s.trim()));
+    if(rows.length && /^key$/i.test(rows[0][0])) rows.shift();
+    const out={}; rows.forEach(([k,u])=>{ if(k) out[k]=u||'#'; });
+    return out;
+  }
+  $ala.addEventListener('click',()=>{
+    const parsed=parseLinksCSV($alt.value);
+    if(!Object.keys(parsed).length){alert('데이터가 없습니다.');return;}
+    const merged={...loadAppLinks(),...parsed};
+    saveAppLinks(merged); applyAppLinks(); closeAL();
+    alert('앱 링크가 반영되었습니다.');
+  });
+</script>
+</body>
+</html>
