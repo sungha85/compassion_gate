@@ -304,216 +304,255 @@
   </div>
 </div>
 
-<script>
-  /* ---------- 전사일정 ---------- */
-  const CATEGORIES=["행사","업무","신청"];
-  const LANES=["대표실","전략","재경","P&C","IT","미션","교파","교미","비전","무브"];
-  const LS_KEY='gate:events:v1';
-  const $=(s)=>document.querySelector(s);
-  const KST=new Intl.DateTimeFormat('ko-KR',{timeZone:'Asia/Seoul',dateStyle:'medium'});
-  const fmtRange=(s,e)=>`${KST.format(s)} ~ ${KST.format(e)}`;
-  const parseDate=(s)=>{const [y,m,d]=s.split('-').map(Number);return new Date(y,m-1,d);};
+<script type="module">
+  /* ===================== Firestore 실시간 연동 달력 스크립트 ===================== */
 
-  // 레인 행 만들기
-  const laneRows=$("#lane-rows");
-  LANES.forEach(name=>{
-    const row=document.createElement("div");
-    row.className="row";
-    row.innerHTML=`<div class="lane-name">${name}</div>`+Array.from({length:12}).map(()=>`<div class="cell"></div>`).join("");
-    laneRows.appendChild(row);
-  });
+  /* 0) 공통 DOM 헬퍼/유틸 */
+  const $ = (s)=>document.querySelector(s);
+  const KST = new Intl.DateTimeFormat('ko-KR',{ timeZone:'Asia/Seoul', dateStyle:'medium' });
+  const fmtRange = (s,e)=> `${KST.format(s)} ~ ${KST.format(e)}`;
+  const parseDate = (s)=>{ const [y,m,d] = s.split('-').map(Number); return new Date(y, m-1, d); };
 
-  // 필터
-  const catWrap=$("#filter-cat"), teamWrap=$("#filter-team");
-  let activeCategory='전체', activeTeam='전체';
-  function renderFilterPills(){
-    catWrap.innerHTML='';
-    ["전체",...CATEGORIES].forEach(cat=>{
-      const b=document.createElement('button');
-      b.className='pill'; b.type='button'; b.textContent=cat;
-      b.setAttribute('aria-pressed', String(activeCategory===cat));
-      b.onclick=()=>{activeCategory=cat;refresh();renderFilterPills();};
-      catWrap.appendChild(b);
-    });
-    teamWrap.innerHTML='';
-    ["전체",...LANES].forEach(team=>{
-      const b=document.createElement('button');
-      b.className='pill'; b.type='button'; b.textContent=team;
-      b.setAttribute('aria-pressed', String(activeTeam===team));
-      b.onclick=()=>{activeTeam=team;refresh();renderFilterPills();};
-      teamWrap.appendChild(b);
+  /* 1) 레인/카테고리 정의 (event 등록 페이지와 동일) */
+  const CATEGORIES = ["행사","업무","신청"];
+  const LANES = ["대표실","전략","재경","P&C","IT","미션","교파","교미","비전","무브"];
+
+  /* 2) 달력 그리드 초기 구성 */
+  const laneRows = $("#lane-rows");
+  if (laneRows && !laneRows.childElementCount){
+    LANES.forEach(name=>{
+      const row = document.createElement("div");
+      row.className = "row";
+      row.innerHTML = `<div class="lane-name">${name}</div>` + Array.from({length:12}).map(()=>`<div class="cell"></div>`).join("");
+      laneRows.appendChild(row);
     });
   }
-  document.getElementById('btn-view-cat').onclick=()=>{catWrap.style.display='flex';teamWrap.style.display='none';};
-  document.getElementById('btn-view-team').onclick=()=>{catWrap.style.display='none';teamWrap.style.display='flex';};
 
-  // 기본 이벤트 (로컬 저장 우선)
-  const DEFAULT_EVENTS=[
-    { title:"Global Budget", start:"2025-02-10", end:"2025-03-20", lane:"전략", category:"업무", note:"PGS~PGS" },
-    { title:"Global Connection", start:"2025-03-01", end:"2025-03-31", lane:"전략", category:"행사", note:"전사 커뮤니케이션" },
-    { title:"Mission Update", start:"2025-05-01", end:"2025-05-31", lane:"미션", category:"행사", note:"미션 리프레시" },
-    { title:"H1 Forecast 정리", start:"2025-04-01", end:"2025-04-30", lane:"재경", category:"업무", note:"상반기 FCST" },
-    { title:"H2 Forecast 준비", start:"2025-09-01", end:"2025-09-30", lane:"재경", category:"업무", note:"하반기 FCST" },
-    { title:"Performance Review(H1)", start:"2025-06-01", end:"2025-06-30", lane:"P&C", category:"업무", note:"평가/보상" },
-    { title:"Leadership Day", start:"2025-10-01", end:"2025-10-07", lane:"P&C", category:"행사", note:"리더십 워크샵" },
-    { title:"보안/정책 점검", start:"2025-07-01", end:"2025-07-31", lane:"IT", category:"업무", note:"정기 점검" },
-    { title:"사내 교육 위크", start:"2025-04-07", end:"2025-04-11", lane:"비전", category:"신청", note:"직무/기술 교육 (사전 신청)" },
-    { title:"신제품 론칭 캠페인", start:"2025-06-01", end:"2025-07-15", lane:"교미", category:"업무", note:"멀티채널" },
-    { title:"고객 컨퍼런스", start:"2025-11-10", end:"2025-11-12", lane:"무브", category:"행사", note:"주요 고객 초청" }
-  ];
-  function loadEvents(){try{const s=localStorage.getItem(LS_KEY);return s?JSON.parse(s):DEFAULT_EVENTS;}catch(e){return DEFAULT_EVENTS;}}
-  function saveEvents(list){localStorage.setItem(LS_KEY, JSON.stringify(list));}
-  let events=loadEvents();
+  /* 3) 필터 */
+  const catWrap = $("#filter-cat");
+  const teamWrap = $("#filter-team");
+  let activeCategory = '전체';
+  let activeTeam = '전체';
 
-  // 바 렌더
-  const layer=document.getElementById("bar-layer");
-  const todayLine=document.getElementById("today-line");
-  function monthIndex(d){return d.getMonth();}
-  function monthSpan(s,e){const months=(e.getFullYear()-s.getFullYear())*12+(e.getMonth()-s.getMonth())+1;return Math.max(1,months);}
-  function laneY(name){const idx=LANES.indexOf(name);const header=34;const laneH=parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--lane-h'));const gap=parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--lane-gap'));return header+idx*(laneH+gap);}
-  function renderTodayLine(){const now=new Date();const m=now.getMonth();const d=now.getDate();const dim=new Date(now.getFullYear(),m+1,0).getDate();const frac=m+(d-1)/dim;const leftPct=(frac/12)*100;todayLine.style.left=`calc(${leftPct}% + var(--left-col))`;}
-  function filtered(list){return list.filter(ev=>{const okCat=(activeCategory==='전체')||(ev.category===activeCategory);const okTeam=(activeTeam==='전체')||(ev.lane===activeTeam);return okCat&&okTeam;});}
+  function renderFilterPills(){
+    if (catWrap){
+      catWrap.innerHTML='';
+      ["전체",...CATEGORIES].forEach(cat=>{
+        const b=document.createElement('button');
+        b.className='pill'; b.type='button'; b.textContent=cat;
+        b.setAttribute('aria-pressed', String(activeCategory===cat));
+        b.onclick=()=>{ activeCategory=cat; refresh(); renderFilterPills(); };
+        catWrap.appendChild(b);
+      });
+    }
+    if (teamWrap){
+      teamWrap.innerHTML='';
+      ["전체",...LANES].forEach(team=>{
+        const b=document.createElement('button');
+        b.className='pill'; b.type='button'; b.textContent=team;
+        b.setAttribute('aria-pressed', String(activeTeam===team));
+        b.onclick=()=>{ activeTeam=team; refresh(); renderFilterPills(); };
+        teamWrap.appendChild(b);
+      });
+    }
+  }
+  renderFilterPills();
+  $("#btn-view-cat")?.addEventListener('click', ()=>{
+    if(catWrap) catWrap.style.display='flex';
+    if(teamWrap) teamWrap.style.display='none';
+  });
+  $("#btn-view-team")?.addEventListener('click', ()=>{
+    if(catWrap) catWrap.style.display='none';
+    if(teamWrap) teamWrap.style.display='flex';
+  });
+
+  /* 4) 바(이벤트) 렌더러 */
+  const layer = document.getElementById("bar-layer");
+  const todayLine = document.getElementById("today-line");
+
+  function monthIndex(d){ return d.getMonth(); } // 0..11
+  function monthSpan(s,e){
+    const months = (e.getFullYear()-s.getFullYear())*12 + (e.getMonth()-s.getMonth()) + 1;
+    return Math.max(1, months);
+  }
+  function laneY(name){
+    const idx = LANES.indexOf(name);
+    const header = 34; // --header-h (px)
+    const laneH = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--lane-h'));
+    const gap = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--lane-gap'));
+    return header + idx * (laneH + gap);
+  }
+  function renderTodayLine(){
+    const now = new Date();
+    const m = now.getMonth();
+    const d = now.getDate();
+    const dim = new Date(now.getFullYear(), m+1, 0).getDate();
+    const frac = m + (d-1)/dim; // 0~11.x
+    const leftPct = (frac/12)*100;
+    if(todayLine) todayLine.style.left = `calc(${leftPct}% + var(--left-col))`;
+  }
+
+  let EVENTS = []; // Firestore에서 채우는 실제 소스
+
+  function filtered(list){
+    return list.filter(ev=>{
+      const okCat = (activeCategory==='전체') || (ev.category===activeCategory);
+      const okTeam = (activeTeam==='전체') || (ev.lane===activeTeam);
+      return okCat && okTeam;
+    });
+  }
+
   function renderBars(){
-    layer.innerHTML='';
-    filtered(events).forEach(ev=>{
-      const s=parseDate(ev.start), e=parseDate(ev.end);
-      const sIdx=monthIndex(s), span=monthSpan(s,e);
-      const bar=document.createElement('div');
-      bar.className=`event t-${ev.lane}`;
-      bar.style.left=`calc(${(sIdx/12)*100}% + 6px)`;
-      bar.style.top=`${laneY(ev.lane) + 18}px`;
-      bar.style.width=`calc(${(span/12)*100}% - 12px)`;
+    if(!layer) return;
+    layer.innerHTML = '';
+    const list = filtered(EVENTS);
+
+    list.forEach(ev=>{
+      if(!ev.start || !ev.end || !ev.lane) return;
+      const s = parseDate(ev.start);
+      const e = parseDate(ev.end);
+      if (isNaN(s) || isNaN(e)) return;
+
+      const sIdx = monthIndex(s), span = monthSpan(s,e);
+      const bar = document.createElement('div');
+      bar.className = `event t-${ev.lane}`;
+      bar.style.left = `calc(${(sIdx/12)*100}% + 6px)`;
+      bar.style.top  = `${laneY(ev.lane) + 18}px`;
+      bar.style.width= `calc(${(span/12)*100}% - 12px)`;
+      bar.tabIndex = 0;
       bar.setAttribute('role','button');
-      bar.setAttribute('tabindex','0');
-      bar.setAttribute('aria-label',`${ev.lane} · ${ev.title} · ${ev.start}~${ev.end} · ${ev.category}`);
-      bar.textContent=ev.title;
-      bar.addEventListener('click',()=>openModal(ev));
-      bar.addEventListener('keydown',(e)=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();openModal(ev);}});
+      bar.setAttribute('aria-label', `${ev.lane} · ${ev.title} · ${ev.start} ~ ${ev.end} · ${ev.category}`);
+      bar.textContent = ev.title || '(제목 없음)';
+      bar.addEventListener('click', ()=>openModal(ev));
+      bar.addEventListener('keydown', (e)=>{ if(e.key==='Enter' || e.key===' ') { e.preventDefault(); openModal(ev); } });
       layer.appendChild(bar);
     });
+
     renderTodayLine();
   }
 
+  // 모달
   function openModal(ev){
-    document.getElementById("m-title").textContent=ev.title;
-    const s=parseDate(ev.start), e=parseDate(ev.end);
-    document.getElementById("m-when").textContent=`일정: ${fmtRange(s,e)}`;
-    document.getElementById("m-dept").textContent=`팀: ${ev.lane} · 카테고리: ${ev.category}`;
-    document.getElementById("m-note").textContent=ev.note ? `메모: ${ev.note}` : '';
-    const modal=document.getElementById("modal");
+    $("#m-title").textContent = ev.title || '(제목 없음)';
+    const s = parseDate(ev.start), e = parseDate(ev.end);
+    $("#m-when").textContent = (ev.start && ev.end) ? `일정: ${fmtRange(s,e)}` : '';
+    $("#m-dept").textContent = `팀: ${ev.lane || ''} · 카테고리: ${ev.category || ''}`;
+    $("#m-note").textContent = ev.note ? `메모: ${ev.note}` : '';
+    const modal = $("#modal");
     modal.style.display='flex';
     modal.setAttribute('aria-hidden','false');
     document.body.style.overflow='hidden';
-    document.getElementById("closeBtn").focus();
+    $("#closeBtn").focus();
   }
   function closeModal(){
-    const modal=document.getElementById("modal");
+    const modal = $("#modal");
     modal.style.display='none';
     modal.setAttribute('aria-hidden','true');
     document.body.style.overflow='';
   }
-  document.getElementById("modal").addEventListener('click', (e)=>{ if(e.target.id==='modal') closeModal(); });
+  $("#modal")?.addEventListener('click', (e)=>{ if(e.target.id==='modal') closeModal(); });
   document.addEventListener('keydown', (e)=>{ if(e.key==='Escape') closeModal(); });
-  document.getElementById("closeBtn").addEventListener('click', closeModal);
+  $("#closeBtn")?.addEventListener('click', closeModal);
 
-  // 초기 렌더
+  // 오늘선/리사이즈 업데이트
   function refresh(){ renderBars(); }
-  renderFilterPills();
-  refresh();
   window.addEventListener('resize', refresh);
 
-  // Export / 이미지 보기
-  document.getElementById('btn-export').addEventListener('click', ()=>{
+  // Export CSV (EVENTS 기준)
+  $("#btn-export")?.addEventListener('click', ()=>{
     const headers=["title","start","end","lane","category","note"];
     const rows=[headers.join(",")].concat(
-      events.map(ev=>headers.map(h=>{
+      EVENTS.map(ev=>headers.map(h=>{
         const val=(ev[h]??"").toString().replace(/"/g,'""');
         return /[",\n]/.test(val)?`"${val}"`:val;
       }).join(","))
     );
-    const csv=rows.join("\n");
-    const blob=new Blob([csv],{type:"text/csv;charset=utf-8;"});
-    const url=URL.createObjectURL(blob);
-    const a=document.createElement('a');
-    a.href=url; a.download='enterprise-calendar.csv';
+    const csv = rows.join("\n");
+    const blob = new Blob([csv], {type:"text/csv;charset=utf-8;"});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = 'enterprise-calendar.csv';
     document.body.appendChild(a); a.click(); a.remove();
     URL.revokeObjectURL(url);
   });
 
-  // 캘린더 이미지 보기
+  // Compact 토글
+  $("#btn-compact")?.addEventListener('click', ()=>{
+    const on = document.body.classList.toggle('compact');
+    $("#btn-compact").setAttribute('aria-pressed', String(on));
+    refresh();
+  });
+
+  // 이미지 보기
   let imageAvailable=false;
-  function calendarImageReady(){ imageAvailable=true; }
-  function calendarImageMissing(){ imageAvailable=false; document.querySelector('.imgbox')?.remove(); }
-  function openImage(){
+  window.calendarImageReady=()=>{ imageAvailable=true; };
+  window.calendarImageMissing=()=>{ imageAvailable=false; document.querySelector('.imgbox')?.remove(); };
+  window.openImage=()=>{
     if(!imageAvailable) return;
-    document.getElementById("m-title").textContent='전사일정&행사 (이미지)';
-    document.getElementById("m-when").innerHTML='<img src="enterprise-calendar.png" style="width:100%;border:1px solid #e5e7eb;border-radius:8px" alt="calendar" />';
-    document.getElementById("m-dept").textContent='';
-    document.getElementById("m-note").textContent='';
-    document.getElementById("modal").style.display='flex';
-    document.getElementById("modal").setAttribute('aria-hidden','false');
+    $("#m-title").textContent='전사일정&행사 (이미지)';
+    $("#m-when").innerHTML='<img src="enterprise-calendar.png" style="width:100%;border:1px solid #e5e7eb;border-radius:8px" alt="calendar" />';
+    $("#m-dept").textContent='';
+    $("#m-note").textContent='';
+    $("#modal").style.display='flex';
+    $("#modal").setAttribute('aria-hidden','false');
     document.body.style.overflow='hidden';
-    document.getElementById("closeBtn").focus();
-  }
-  window.calendarImageReady=calendarImageReady;
-  window.calendarImageMissing=calendarImageMissing;
-  window.openImage=openImage;
-
-  /* ---------- 상단 앱 링크 매핑 (로컬 저장) ---------- */
-  const APP_LINKS_LS='portal:app_links:v2';
-  const APP_KEYS=["인사근태","조직도","연락처","사번","LMS 교육","Blue line","그룹웨어","Bizplay","Chat FIN",
-                  "브랜드 허브","유튜브","네이버 포스트","숏츠","글로벌 ONE","CSF","홈페이지","US","AU","UK","CA",
-                  "월드비전","유니세프","굿네이버스","세이브더칠드런","기아대책","초록우산","밀알","Scorecard","CDSP","KRI","LE","IT HELP","OA 서비스","업무요청","L&L","CS"];
-  const APP_LINKS_DEFAULT={
-    "조직도":"https://compassionkorea.sharepoint.com/:b:/s/share/EVwEjJlrN2JGs9_tak31NVABfFJgdYNMhtQGLq0ArpJZNA?e=bXsScl"
+    $("#closeBtn").focus();
   };
-  function loadAppLinks(){try{const s=localStorage.getItem(APP_LINKS_LS);return s?JSON.parse(s):{...APP_LINKS_DEFAULT};}catch(e){return {...APP_LINKS_DEFAULT};}}
-  function saveAppLinks(map){localStorage.setItem(APP_LINKS_LS,JSON.stringify(map));}
-  function applyAppLinks(){
-    const map=loadAppLinks();
-    document.querySelectorAll('.app[data-key]').forEach(a=>{
-      const key=a.getAttribute('data-key'); const url=map[key];
-      if(url){ a.href=url; a.target='_blank'; a.rel='noopener noreferrer'; a.title=(a.title||key)+' (열기)'; }
+
+  // Add Event → 이벤트 등록 페이지로 이동 (현재 배포 구조 기준)
+  const addBtn = $("#btn-add");
+  if (addBtn){
+    addBtn.outerHTML = `
+      <a class="btn primary" id="btn-add"
+         href="https://sungha85.github.io/compassion_gate/event/"
+         title="일정 추가">Add Event</a>`;
+  }
+
+  /* 5) Firebase 연결 (CDN, v10 모듈) */
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-app.js";
+  import {
+    getFirestore, collection, onSnapshot, query, orderBy
+  } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyBsTMadItNXG9YqmtFYr9bX6lbt0qIh9FQ",
+    authDomain: "dcp-page.firebaseapp.com",
+    projectId: "dcp-page",
+    storageBucket: "dcp-page.firebasestorage.app",
+    messagingSenderId: "1056273445903",
+    appId: "1:1056273445903:web:9e924f9bd476a860af1f7a",
+    measurementId: "G-CZS1G9M1KQ"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db  = getFirestore(app);
+
+  /* 6) Firestore 실시간 구독 → EVENTS 갱신 → 달력 렌더 */
+  const eventsRef = collection(db, 'events');
+  const q = query(eventsRef, orderBy('createdAt','desc'));
+  onSnapshot(q, (snapshot)=>{
+    const next = [];
+    snapshot.forEach(doc=>{
+      const d = doc.data();
+      next.push({
+        title: d.title || '(제목 없음)',
+        start: d.start || '',
+        end  : d.end   || '',
+        category: d.category || '',
+        lane: d.lane || '',
+        note: d.note || ''
+      });
     });
-  }
-  applyAppLinks();
-
-  // 링크 편집 모달
-  const $alb=document.getElementById('app-links-btn'),
-        $alm=document.getElementById('app-links-modal'),
-        $alt=document.getElementById('app-links-text'),
-        $ala=document.getElementById('app-links-apply'),
-        $alc=document.getElementById('app-links-cancel');
-  function openAL(){
-    $alm.style.display='flex';
-    $alm.setAttribute('aria-hidden','false');
-    const map=loadAppLinks();
-    $alt.value='key,url\n'+APP_KEYS.map(k=>`${k},${map[k]||''}`).join('\n');
-    $alt.focus();
-  }
-  function closeAL(){
-    $alm.style.display='none';
-    $alm.setAttribute('aria-hidden','true');
-  }
-  $alb.addEventListener('click',openAL);
-  $alc.addEventListener('click',closeAL);
-  $alm.addEventListener('click',e=>{ if(e.target.id==='app-links-modal') closeAL(); });
-  document.addEventListener('keydown',e=>{ if(e.key==='Escape'&&$alm.style.display==='flex') closeAL(); });
-
-  function parseLinksCSV(text){
-    const rows=text.trim().split(/\r?\n/).map(r=>r.split(',').map(s=>s.trim()));
-    if(rows.length && /^key$/i.test(rows[0][0])) rows.shift();
-    const out={}; rows.forEach(([k,u])=>{ if(k) out[k]=u||'#'; });
-    return out;
-  }
-  $ala.addEventListener('click',()=>{
-    const parsed=parseLinksCSV($alt.value);
-    if(!Object.keys(parsed).length){alert('데이터가 없습니다.');return;}
-    const merged={...loadAppLinks(),...parsed};
-    saveAppLinks(merged); applyAppLinks(); closeAL();
-    alert('앱 링크가 반영되었습니다.');
+    // 시간순(오래된 → 최신)으로 정렬해서 겹침 최소화
+    next.sort((a,b)=> (a.start||'').localeCompare(b.start||''));
+    EVENTS = next;
+    refresh();
+  }, (err)=>{
+    console.error('[Firestore] onSnapshot error:', err);
   });
 </script>
+
 </body>
 </html>
+
 
