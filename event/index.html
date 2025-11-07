@@ -1,103 +1,128 @@
-
 <!DOCTYPE html>
-<html lang="ko" dir="ltr">
+<html lang="ko">
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>일정 등록 – Enterprise Calendar Admin</title>
+<title>Event Admin</title>
 <style>
-  :root{
-    --bg:#f6f7f9; --card:#fff; --grid:#e5e7eb; --text:#0f172a; --focus:#2563eb;
-  }
-  *{box-sizing:border-box} body{margin:24px; font-family:system-ui,-apple-system,Segoe UI,Roboto,Apple SD Gothic Neo,Noto Sans KR,sans-serif; background:var(--bg); color:var(--text)}
-  .wrap{max-width:880px; margin:0 auto}
-  h1{margin:0 0 16px; font-size:22px}
-  .card{background:var(--card); border:1px solid var(--grid); border-radius:14px; box-shadow:0 2px 6px rgba(0,0,0,.04)}
-  .row{display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:12px}
-  label{font-size:13px; color:#111827}
-  input,select,textarea{width:100%; padding:10px; border:1px solid var(--grid); border-radius:10px; font-size:14px; background:#fff}
-  textarea{min-height:80px}
-  .actions{display:flex; gap:8px; justify-content:flex-end}
-  .btn{border:1px solid var(--grid); background:#fff; border-radius:10px; padding:10px 12px; cursor:pointer; font-size:14px}
-  .btn.primary{background:#2563eb; color:#fff; border-color:#2563eb}
-  .btn:focus-visible{outline:3px solid var(--focus); outline-offset:2px}
-  .hint{font-size:12px; color:#475569}
-  .spacer{height:18px}
-  .list{margin-top:16px; padding:12px}
-  .item{padding:10px; border:1px solid var(--grid); border-radius:10px; margin-bottom:8px}
-  .item b{display:inline-block; min-width:120px}
-  .topbar{display:flex; align-items:center; justify-content:space-between; margin-bottom:16px}
+  body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Apple SD Gothic Neo,Noto Sans KR,sans-serif;margin:24px;background:#f6f7f9;color:#0f172a}
+  .wrap{max-width:960px;margin:0 auto}
+  h1{margin:0 0 16px;font-size:22px}
+  .card{background:#fff;border:1px solid #e5e7eb;border-radius:12px;box-shadow:0 2px 6px rgba(0,0,0,.04)}
+  .grid{display:grid;gap:10px}
+  label{font-size:12px;color:#334155}
+  input,select,textarea{width:100%;padding:8px;border:1px solid #e5e7eb;border-radius:8px;background:#fff}
+  button,.btn{border:1px solid #e5e7eb;border-radius:10px;background:#fff;padding:8px 12px;cursor:pointer}
+  .btn.primary{background:#2563eb;color:#fff;border-color:#2563eb}
+  .row{display:grid;grid-template-columns:repeat(6,1fr);gap:10px}
+  .row > .grow{grid-column:1/-1}
+  table{width:100%;border-collapse:collapse}
+  th,td{border-bottom:1px solid #e5e7eb;padding:8px;text-align:left;font-size:13px}
+  th{background:#f9fafb}
+  .toolbar{display:flex;gap:8px;align-items:center;margin:16px 0}
+  .modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.45);padding:20px}
+  .modal .box{background:#fff;border:1px solid #e5e7eb;border-radius:12px;max-width:560px;width:100%;padding:16px}
 </style>
 </head>
 <body>
 <div class="wrap">
-  <div class="topbar">
-    <h1>일정 등록 (Admin)</h1>
-    <a href="./index.html" class="btn">메인으로 돌아가기</a>
-  </div>
+  <h1>Event Admin</h1>
 
-  <form id="eventForm" class="card" style="padding:16px">
-    <div class="row">
-      <label>제목
-        <input name="title" required placeholder="예: Leadership Day" />
-      </label>
-      <label>카테고리
-        <select name="category" required>
-          <option value="행사">행사</option>
-          <option value="업무">업무</option>
-          <option value="신청">신청</option>
-        </select>
-      </label>
-      <label>팀(레인)
-        <select name="lane" required>
-          <!-- index.html에서 사용 중인 레인과 일치 -->
-          <option value="대표실">대표실</option>
-          <option value="전략">전략</option>
-          <option value="재경">재경</option>
-          <option value="P&C">P&amp;C</option>
-          <option value="IT">IT</option>
-          <option value="미션">미션</option>
-          <option value="교파">교파</option>
-          <option value="교미">교미</option>
-          <option value="비전">비전</option>
-          <option value="무브">무브</option>
-        </select>
-      </label>
-      <label>시작일
-        <input type="date" name="start" required />
-      </label>
-      <label>종료일
-        <input type="date" name="end" required />
-      </label>
+  <!-- 신규 등록 -->
+  <form id="create-form" class="card" style="padding:12px;margin-bottom:16px">
+    <div class="grid">
+      <div class="row">
+        <label>제목<input name="title" required placeholder="예: Leadership Day"></label>
+        <label>시작일<input type="date" name="start" required></label>
+        <label>종료일<input type="date" name="end" required></label>
+        <label>카테고리
+          <select name="category" required>
+            <option value="행사">행사</option>
+            <option value="업무">업무</option>
+            <option value="신청">신청</option>
+          </select>
+        </label>
+        <label>레인(팀)
+          <select name="lane" required id="lane-select"></select>
+        </label>
+        <label>메모(선택)<input name="note" placeholder="비고"></label>
+      </div>
+      <div><button class="btn primary" type="submit">등록</button></div>
     </div>
-    <div class="spacer"></div>
-    <label>메모(선택)
-      <textarea name="note" placeholder="비고를 입력하세요."></textarea>
-    </label>
-    <div class="spacer"></div>
-    <div class="actions">
-      <button type="button" id="resetBtn" class="btn">초기화</button>
-      <button type="submit" class="btn primary">저장</button>
-    </div>
-    <p class="hint">※ 저장 시 Firestore의 <code>events</code> 컬렉션에 항목이 추가됩니다.</p>
   </form>
 
-  <div class="card list">
-    <div style="display:flex;align-items:center;justify-content:space-between;">
-      <h2 style="margin:0;font-size:16px">최근 저장된 일정 (상위 10개)</h2>
-      <button id="reloadBtn" class="btn">새로고침</button>
+  <!-- 목록/검색 -->
+  <div class="card" style="padding:12px">
+    <div class="toolbar">
+      <input id="search" placeholder="제목/팀/카테고리 검색">
+      <select id="sort">
+        <option value="start_asc">시작일 ▲</option>
+        <option value="start_desc">시작일 ▼</option>
+        <option value="created_desc">최근등록 ▼</option>
+      </select>
+      <button id="refresh" class="btn">새로고침</button>
     </div>
-    <div id="recentList"></div>
+    <div style="overflow:auto;">
+      <table>
+        <thead>
+          <tr>
+            <th style="min-width:160px">제목</th>
+            <th style="min-width:110px">기간</th>
+            <th style="min-width:80px">팀</th>
+            <th style="min-width:70px">카테고리</th>
+            <th style="min-width:220px">메모</th>
+            <th style="min-width:150px">관리</th>
+          </tr>
+        </thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
   </div>
 </div>
 
-<!-- Firebase (v10, CDN, module) -->
-<script type="module">
-  // === Firebase SDKs ===
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-app.js";
-  import { getFirestore, collection, addDoc, serverTimestamp, query, orderBy, limit, getDocs } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-firestore.js";
+<!-- 수정 모달 -->
+<div class="modal" id="edit-modal" aria-hidden="true">
+  <div class="box">
+    <h3 style="margin:0 0 10px">이벤트 수정</h3>
+    <form id="edit-form" class="grid">
+      <input type="hidden" name="id">
+      <div class="row">
+        <label>제목<input name="title" required></label>
+        <label>시작일<input type="date" name="start" required></label>
+        <label>종료일<input type="date" name="end" required></label>
+        <label>카테고리
+          <select name="category" required>
+            <option value="행사">행사</option>
+            <option value="업무">업무</option>
+            <option value="신청">신청</option>
+          </select>
+        </label>
+        <label>레인(팀)
+          <select name="lane" required id="edit-lane-select"></select>
+        </label>
+        <label>메모(선택)<input name="note"></label>
+      </div>
+      <div style="display:flex;gap:8px;justify-content:flex-end">
+        <button type="button" class="btn" id="edit-cancel">취소</button>
+        <button type="submit" class="btn primary">저장</button>
+      </div>
+    </form>
+  </div>
+</div>
 
-  // === 프로젝트 설정(사용자 제공 값) ===
+<script type="module">
+  const LANES = ["대표실","컴플","전략","재경","P&C","미션","교파","교미","비전","무브","디이","마캠","브컴","크리","특후","IT","SE","SR"];
+  const laneSel = document.getElementById('lane-select');
+  const editLaneSel = document.getElementById('edit-lane-select');
+  laneSel.innerHTML = LANES.map(l=>`<option value="${l}">${l}</option>`).join('');
+  editLaneSel.innerHTML = laneSel.innerHTML;
+
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-app.js";
+  import {
+    getFirestore, collection, addDoc, serverTimestamp,
+    getDocs, query, orderBy, updateDoc, doc, deleteDoc
+  } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-firestore.js";
+
   const firebaseConfig = {
     apiKey: "AIzaSyBsTMadItNXG9YqmtFYr9bX6lbt0qIh9FQ",
     authDomain: "dcp-page.firebaseapp.com",
@@ -108,81 +133,145 @@
     measurementId: "G-CZS1G9M1KQ"
   };
 
-  // === 초기화 ===
   const app = initializeApp(firebaseConfig);
   const db  = getFirestore(app);
+  const eventsRef = collection(db, 'events');
 
-  // === DOM ===
-  const $ = (sel) => document.querySelector(sel);
-  const form = $('#eventForm');
-  const resetBtn = $('#resetBtn');
-  const reloadBtn = $('#reloadBtn');
-  const list = $('#recentList');
-
-  // === 저장 ===
-  form.addEventListener('submit', async (e) => {
+  // 등록
+  const createForm = document.getElementById('create-form');
+  createForm.addEventListener('submit', async (e)=>{
     e.preventDefault();
-    const fd = new FormData(form);
-    const title = (fd.get('title')||'').toString().trim();
-    const start = (fd.get('start')||'').toString();
-    const end   = (fd.get('end')||'').toString();
-    const category = (fd.get('category')||'').toString();
-    const lane  = (fd.get('lane')||'').toString();
-    const note  = (fd.get('note')||'').toString().trim();
-
-    if(!title || !start || !end){ alert('필수 항목을 입력해주세요.'); return; }
-    if(end < start){ alert('종료일이 시작일보다 빠를 수 없습니다.'); return; }
-
-    try{
-      await addDoc(collection(db, 'events'), {
-        title, start, end, category, lane, note,
-        createdAt: serverTimestamp(),
-        // 조회/그리드 보조 필드(옵션)
-        yearStart: Number(start.slice(0,4)),
-        monthStart: Number(start.slice(5,7)),
-        yearEnd: Number(end.slice(0,4)),
-        monthEnd: Number(end.slice(5,7)),
-      });
-      alert('저장되었습니다.');
-      form.reset();
-      await loadRecent();
-    }catch(err){
-      console.error(err);
-      alert('저장 중 오류가 발생했습니다. 콘솔을 확인해주세요.');
-    }
+    const fd = new FormData(createForm);
+    const data = {
+      title: fd.get('title').toString().trim(),
+      start: fd.get('start').toString(),
+      end  : fd.get('end').toString(),
+      category: fd.get('category').toString(),
+      lane: fd.get('lane').toString(),
+      note: (fd.get('note')||'').toString().trim(),
+      createdAt: serverTimestamp()
+    };
+    if(data.end < data.start){ alert('종료일이 시작일보다 빠를 수 없습니다.'); return; }
+    await addDoc(eventsRef, data);
+    createForm.reset();
+    await load();
+    alert('등록되었습니다.');
   });
 
-  resetBtn.addEventListener('click', ()=> form.reset());
+  // 목록 로드/렌더
+  const tbody = document.getElementById('tbody');
+  const search = document.getElementById('search');
+  const sortSel = document.getElementById('sort');
+  document.getElementById('refresh').addEventListener('click', load);
 
-  // === 최근 10개 로드(저장 확인용) ===
-  async function loadRecent(){
-    list.innerHTML = '불러오는 중...';
-    try{
-      const q = query(collection(db,'events'), orderBy('createdAt','desc'), limit(10));
-      const snap = await getDocs(q);
-      if(snap.empty){ list.innerHTML = '<p class="hint">저장된 일정이 없습니다.</p>'; return; }
-      list.innerHTML = '';
-      snap.forEach(doc=>{
-        const d = doc.data();
-        const el = document.createElement('div');
-        el.className = 'item';
-        el.innerHTML = `
-          <div><b>제목</b> ${d.title||''}</div>
-          <div><b>기간</b> ${d.start||''} ~ ${d.end||''}</div>
-          <div><b>팀/카테고리</b> ${d.lane||''} · ${d.category||''}</div>
-          ${d.note ? `<div><b>메모</b> ${d.note}</div>` : ''}
-        `;
-        list.appendChild(el);
-      });
-    }catch(err){
-      console.error(err);
-      list.innerHTML = '<p class="hint">목록 로드 중 오류가 발생했습니다.</p>';
-    }
+  async function load(){
+    // 기본은 시작일 오름차순
+    const qs = await getDocs(query(eventsRef, orderBy('start')));
+    const list = [];
+    qs.forEach(d=>{
+      const v = d.data();
+      list.push({ id:d.id, ...v });
+    });
+    render(list);
   }
-  reloadBtn.addEventListener('click', loadRecent);
 
-  // 첫 로드 때 목록 표시
-  loadRecent();
+  function render(list){
+    // 검색
+    const q = (search.value||'').trim();
+    const filtered = q ? list.filter(v=>{
+      const hay = `${v.title||''} ${v.lane||''} ${v.category||''} ${v.note||''}`.toLowerCase();
+      return hay.includes(q.toLowerCase());
+    }) : list;
+
+    // 정렬
+    const sort = sortSel.value;
+    filtered.sort((a,b)=>{
+      if(sort==='start_desc') return (b.start||'').localeCompare(a.start||'');
+      if(sort==='created_desc') return (b.createdAt?.seconds||0) - (a.createdAt?.seconds||0);
+      return (a.start||'').localeCompare(b.start||'');
+    });
+
+    // 렌더
+    tbody.innerHTML = filtered.map(v=>{
+      const period = v.start && v.end ? `${v.start} ~ ${v.end}` : '';
+      return `<tr>
+        <td>${escapeHtml(v.title||'')}</td>
+        <td>${period}</td>
+        <td>${escapeHtml(v.lane||'')}</td>
+        <td>${escapeHtml(v.category||'')}</td>
+        <td>${escapeHtml(v.note||'')}</td>
+        <td>
+          <button class="btn" data-edit="${v.id}">수정</button>
+          <button class="btn" data-del="${v.id}" style="margin-left:6px">삭제</button>
+        </td>
+      </tr>`;
+    }).join('');
+
+    // 바인딩
+    tbody.querySelectorAll('[data-edit]').forEach(btn=>{
+      btn.addEventListener('click', ()=> openEdit(btn.getAttribute('data-edit'), filtered));
+    });
+    tbody.querySelectorAll('[data-del]').forEach(btn=>{
+      btn.addEventListener('click', ()=> del(btn.getAttribute('data-del')));
+    });
+  }
+
+  function escapeHtml(s){ return (s||'').replace(/[&<>"']/g, m=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); }
+
+  // 수정 모달
+  const editModal = document.getElementById('edit-modal');
+  const editForm  = document.getElementById('edit-form');
+  document.getElementById('edit-cancel').addEventListener('click', closeEdit);
+  editModal.addEventListener('click', (e)=>{ if(e.target.id==='edit-modal') closeEdit(); });
+
+  function openEdit(id, list){
+    const v = list.find(x=>x.id===id);
+    if(!v) return;
+    editForm.id.value = id;
+    editForm.title.value = v.title||'';
+    editForm.start.value = v.start||'';
+    editForm.end.value   = v.end||'';
+    editForm.category.value = v.category||'행사';
+    editForm.lane.value = v.lane||'';
+    editForm.note.value = v.note||'';
+    editModal.style.display='flex';
+    editModal.setAttribute('aria-hidden','false');
+  }
+  function closeEdit(){
+    editModal.style.display='none';
+    editModal.setAttribute('aria-hidden','true');
+  }
+
+  editForm.addEventListener('submit', async (e)=>{
+    e.preventDefault();
+    const id = editForm.id.value;
+    const ref = doc(db,'events', id);
+    const data = {
+      title: editForm.title.value.trim(),
+      start: editForm.start.value,
+      end  : editForm.end.value,
+      category: editForm.category.value,
+      lane: editForm.lane.value,
+      note: editForm.note.value.trim()
+    };
+    if(data.end < data.start){ alert('종료일이 시작일보다 빠를 수 없습니다.'); return; }
+    await updateDoc(ref, data);
+    closeEdit();
+    await load();
+    alert('수정되었습니다.');
+  });
+
+  async function del(id){
+    if(!confirm('정말 삭제하시겠습니까?')) return;
+    await deleteDoc(doc(db,'events', id));
+    await load();
+    alert('삭제되었습니다.');
+  }
+
+  // 초기
+  search.addEventListener('input', ()=> load());
+  sortSel.addEventListener('change', ()=> load());
+  await load();
 </script>
 </body>
 </html>
