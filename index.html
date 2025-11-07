@@ -116,6 +116,28 @@
     .grid,.imgbox,.hint,h1,.controls,.sp-hero,.cal-controls{display:none}
     .year-grid{border:0}
   }
+ /* ===== Tooltip (공통 스타일) ===== */
+.tooltip {
+  position: fixed;
+  z-index: 9999;
+  max-width: 260px;
+  font-size: 12px;
+  line-height: 1.4;
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: #fff;              /* 흰색 배경 */
+  color: #111827;                /* 글씨는 짙은 회색 */
+  border: 1px solid #e5e7eb;     /* 연한 회색 테두리 */
+  box-shadow: 0 8px 24px rgba(0,0,0,.18);
+  pointer-events: none;
+  transform: translate(-50%, -8px);
+  opacity: 0;
+  transition: opacity .12s ease, transform .12s ease;
+}
+.tooltip[data-show="true"] {
+  opacity: 1;
+  transform: translate(-50%, -12px);
+} 
 </style>
 </head>
 <body>
@@ -147,16 +169,66 @@
     <section aria-labelledby="sec-pc">
       <div class="folder" role="group" aria-labelledby="sec-pc">
         <div class="apps">
-          <a class="app" data-key="인사근태" href="http://gwa.compassion.or.kr/gw/bizbox.do" target="_blank" rel="noopener noreferrer" title="인사근태"><div class="badge c-red"><span aria-hidden="true">근태</span></div><div class="label">인사근태</div></a>
-          <a class="app" data-key="조직도" href="https://compassionkorea.sharepoint.com/:b:/s/share/EVwEjJlrN2JGs9_tak31NVABfFJgdYNMhtQGLq0ArpJZNA?e=HZ27fL" target="_blank" rel="noopener noreferrer"><div class="badge c-sky">OC</div><div class="label">조직도</div></a>
-          <a class="app" data-key="연락처" href="https://compassionkorea.sharepoint.com/:b:/s/share/EW4HfbQ0aUdEsSm7fBLWAHMBbWviKQ6R6FUxvvXu7P3k7Q?e=padbKz" target="_blank" rel="noopener noreferrer"><div class="badge c-purple">연락</div><div class="label">연락처</div></a>
-          <a class="app" data-key="사번" href="#" target="_blank" rel="noopener noreferrer"><div class="badge c-orange">ID</div><div class="label">사번</div></a>
-          <a class="app" data-key="LMS 교육" href="https://hrd.compassion.or.kr/index.do" target="_blank" rel="noopener noreferrer"><div class="badge c-green">LMS</div><div class="label">LMS 교육</div></a>
-          <span></span><span></span><span></span>
-        </div>
-      </div>
-      <div class="folder-label" id="sec-pc"><span>P&amp;C</span></div>
-    </section>
+<!-- 인사근태 -->
+      <a class="app"
+         data-key="인사근태"
+         href="http://gwa.compassion.or.kr/gw/bizbox.do"
+         target="_blank"
+         rel="noopener noreferrer"
+         data-tooltip="출퇴근, 연차 등 근태를 확인할 수 있습니다.">
+        <div class="badge c-red"><span aria-hidden="true">근태</span></div>
+        <div class="label">인사근태</div>
+      </a>
+
+      <!-- 조직도 -->
+      <a class="app"
+         data-key="조직도"
+         href="https://compassionkorea.sharepoint.com/:b:/s/share/EVwEjJlrN2JGs9_tak31NVABfFJgdYNMhtQGLq0ArpJZNA?e=HZ27fL"
+         target="_blank"
+         rel="noopener noreferrer"
+         data-tooltip="부서와 팀 구성을 한눈에 확인할 수 있습니다.">
+        <div class="badge c-sky">OC</div>
+        <div class="label">조직도</div>
+      </a>
+
+      <!-- 연락처 -->
+      <a class="app"
+         data-key="연락처"
+         href="https://compassionkorea.sharepoint.com/:b:/s/share/EW4HfbQ0aUdEsSm7fBLWAHMBbWviKQ6R6FUxvvXu7P3k7Q?e=padbKz"
+         target="_blank"
+         rel="noopener noreferrer"
+         data-tooltip="사내 주요 연락처를 확인할 수 있습니다.">
+        <div class="badge c-purple">연락</div>
+        <div class="label">연락처</div>
+      </a>
+
+      <!-- 사번 -->
+      <a class="app"
+         data-key="사번"
+         href="#"
+         target="_blank"
+         rel="noopener noreferrer"
+         data-tooltip="사번 관련 정보를 조회하거나 관리할 수 있습니다.">
+        <div class="badge c-orange">ID</div>
+        <div class="label">사번</div>
+      </a>
+
+      <!-- LMS 교육 -->
+      <a class="app"
+         data-key="LMS 교육"
+         href="https://hrd.compassion.or.kr/index.do"
+         target="_blank"
+         rel="noopener noreferrer"
+         data-tooltip="사내 교육 플랫폼(LMS) 수강 및 이력 관리가 가능합니다.">
+        <div class="badge c-green">LMS</div>
+        <div class="label">LMS 교육</div>
+      </a>
+
+      <span></span><span></span><span></span>
+    </div>
+  </div>
+  <div class="folder-label" id="sec-pc"><span>P&amp;C</span></div>
+</section>
 
     <!-- 🍑 재경 -->
     <section aria-labelledby="sec-fin">
@@ -612,7 +684,92 @@
 
   function refresh(){ renderBars(); }
   window.addEventListener('resize', refresh);
+// ===== Tooltip (data-tooltip 속성 전용) =====
+(function setupTooltip(){
+  const tip = document.createElement('div');
+  tip.className = 'tooltip';
+  tip.setAttribute('role', 'tooltip');
+  tip.setAttribute('aria-hidden', 'true');
+  document.body.appendChild(tip);
 
+  let activeEl = null;
+
+  // 툴팁 위치 계산
+  function positionTip(x, y){
+    const offsetY = 18;
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+    const margin = 10;
+    let left = x;
+    let top = y - offsetY;
+
+    tip.style.left = `${left}px`;
+    tip.style.top = `${top}px`;
+    const rect = tip.getBoundingClientRect();
+
+    if(rect.left < margin) left += (margin - rect.left);
+    if(rect.right > vw - margin) left -= (rect.right - (vw - margin));
+    if(rect.top < margin) top = y + offsetY;
+    if(rect.bottom > vh - margin) top = vh - margin - rect.height;
+
+    tip.style.left = `${left}px`;
+    tip.style.top = `${top}px`;
+  }
+
+  function showTip(el, x, y){
+    const text = el.getAttribute('data-tooltip');
+    if(!text) return;
+    activeEl = el;
+    tip.textContent = text;
+    tip.dataset.show = 'true';
+    tip.setAttribute('aria-hidden', 'false');
+    positionTip(x, y);
+  }
+
+  function hideTip(){
+    activeEl = null;
+    tip.dataset.show = 'false';
+    tip.setAttribute('aria-hidden', 'true');
+  }
+
+  // 마우스 이벤트 (위임)
+  document.addEventListener('mouseover', e=>{
+    const el = e.target.closest('[data-tooltip]');
+    if(!el) return;
+    showTip(el, e.clientX, e.clientY);
+  });
+  document.addEventListener('mousemove', e=>{
+    if(!activeEl) return;
+    positionTip(e.clientX, e.clientY);
+  });
+  document.addEventListener('mouseout', e=>{
+    if(activeEl && !e.relatedTarget?.closest('[data-tooltip]')) hideTip();
+  });
+
+  // 키보드 접근성
+  document.addEventListener('focusin', e=>{
+    const el = e.target.closest('[data-tooltip]');
+    if(!el) return;
+    const r = el.getBoundingClientRect();
+    showTip(el, r.left + r.width/2, r.top);
+  });
+  document.addEventListener('focusout', e=>{
+    if(e.target.closest('[data-tooltip]')) hideTip();
+  });
+
+  // 창 스크롤/리사이즈 시 위치 조정
+  window.addEventListener('scroll', ()=>{
+    if(!activeEl || tip.getAttribute('aria-hidden')==='true') return;
+    const r = activeEl.getBoundingClientRect();
+    positionTip(r.left + r.width/2, r.top);
+  }, { passive:true });
+
+  window.addEventListener('resize', ()=>{
+    if(!activeEl || tip.getAttribute('aria-hidden')==='true') return;
+    const r = activeEl.getBoundingClientRect();
+    positionTip(r.left + r.width/2, r.top);
+  });
+})();
   // 최초 빌드/렌더
   buildGrid();
   refresh();
@@ -662,6 +819,8 @@
   });
 
   applyAppLinks();
+  
 </script>
 </body>
 </html>
+
