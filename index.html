@@ -136,8 +136,84 @@
 }
 .tooltip[data-show="true"] {
   opacity: 1;
+<<<<<<< HEAD
   transform: translate(-50%, -12px);
 } 
+=======
+  transform: translateY(0) scale(1);
+}
+
+/* 화살표 */
+.tooltip::after{
+  content:"";
+  position:absolute;
+  left:50%;
+  transform: translateX(-50%);
+  border:6px solid transparent;
+  filter: drop-shadow(0 2px 2px rgba(0,0,0,.08));
+}
+
+/* 위쪽 배치(기본) — 화살표가 아래를 향함 */
+.tooltip[data-pos="top"]::after{
+  bottom:-12px;
+  border-top-color:#fff;
+}
+
+/* 아래쪽 배치 — 화살표가 위를 향함 */
+.tooltip[data-pos="bottom"]::after{
+  top:-12px;
+  border-bottom-color:#fff;
+}
+
+  /* === 카드 높이 통일: grid-item(section)와 .folder를 늘려서 맞춤 === */
+.grid > section{ display:flex; flex-direction:column; height:100%; }
+.grid > section .folder{ display:flex; flex-direction:column; height:100%; }
+.grid > section .apps{ flex:1 1 auto; }           /* 아이콘 영역이 남는 높이를 차지 */
+
+/* (선택) 아이콘 그리드가 항상 고르게 보이게 */
+.grid > section .apps{ display:grid; grid-template-columns:repeat(3,1fr); gap:10px; }
+
+/* (선택) “모~든 카드 높이를 완전히 동일”하게 강제하고 싶다면 값 하나로 통일 */
+.grid > section .folder{ min-height:260px; }       /* ⑤ 카드 공통 최소높이(원하면 숫자 조절) */
+
+  /* === 카드 높이 통일 + 더보기 칩 === */
+.grid > section{display:flex;flex-direction:column;height:100%}
+.grid > section .folder{display:flex;flex-direction:column;height:100%;min-height:280px}
+.grid > section .apps{flex:1 1 auto}
+
+/* +N 더보기 칩 */
+.more-chip{
+  display:flex;align-items:center;justify-content:center;
+  gap:6px;height:92px;border-radius:16px;border:1px dashed #dbe1e8;
+  background:#f8fafc;color:#334155;cursor:pointer;font-size:12px;font-weight:700;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.6);
+}
+.more-chip:hover{background:#f1f5f9}
+
+/* 모달(더보기) */
+#more-modal[aria-hidden="true"]{display:none}
+#more-modal{
+  position:fixed;inset:0;z-index:70;display:flex;align-items:center;justify-content:center;
+  padding:20px;background:rgba(0,0,0,.45)
+}
+.more-box{
+  background:#fff;border:1px solid var(--grid);border-radius:14px;max-width:780px;width:100%;
+  padding:16px;box-shadow:0 10px 30px rgba(0,0,0,.15)
+}
+.more-title{margin:0 0 10px;font-size:16px}
+.more-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:14px}
+.more-app{
+  display:flex;flex-direction:column;align-items:center;gap:8px;padding:12px;border:1px solid #eef2f6;
+  border-radius:12px;background:#fafafa
+}
+.more-app .badge{transform:none} /* 모달 안에선 점프 효과 제거 */
+.more-footer{display:flex;gap:8px;justify-content:flex-end;margin-top:14px}
+/* === 모달 표시 보강 === */
+#more-modal { display: flex; }                     /* 기본 표시를 flex로 (안보이는 문제 방지) */
+#more-modal[aria-hidden="true"] { display: none; } /* 닫을 때만 숨기기 */
+
+  
+>>>>>>> fa56e08 (Update index.html)
 </style>
 </head>
 <body>
@@ -817,3 +893,11 @@
 </body>
 </html>
 
+<<<<<<< HEAD
+=======
+
+
+
+
+
+>>>>>>> fa56e08 (Update index.html)
