@@ -212,6 +212,9 @@
 }
 .more-app .badge{transform:none} /* 모달 안에선 점프 효과 제거 */
 .more-footer{display:flex;gap:8px;justify-content:flex-end;margin-top:14px}
+/* === 모달 표시 보강 === */
+#more-modal { display: flex; }                     /* 기본 표시를 flex로 (안보이는 문제 방지) */
+#more-modal[aria-hidden="true"] { display: none; } /* 닫을 때만 숨기기 */
 
   
 </style>
@@ -976,6 +979,7 @@
 </script>
 </body>
 </html>
+
 
 
 
