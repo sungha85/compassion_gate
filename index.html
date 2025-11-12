@@ -138,6 +138,17 @@
   opacity: 1;
   transform: translate(-50%, -12px);
 } 
+
+  /* === 카드 높이 통일: grid-item(section)와 .folder를 늘려서 맞춤 === */
+.grid > section{ display:flex; flex-direction:column; height:100%; }
+.grid > section .folder{ display:flex; flex-direction:column; height:100%; }
+.grid > section .apps{ flex:1 1 auto; }           /* 아이콘 영역이 남는 높이를 차지 */
+
+/* (선택) 아이콘 그리드가 항상 고르게 보이게 */
+.grid > section .apps{ display:grid; grid-template-columns:repeat(3,1fr); gap:10px; }
+
+/* (선택) “모~든 카드 높이를 완전히 동일”하게 강제하고 싶다면 값 하나로 통일 */
+.grid > section .folder{ min-height:260px; }       /* ⑤ 카드 공통 최소높이(원하면 숫자 조절) */
 </style>
 </head>
 <body>
@@ -823,4 +834,5 @@
 </script>
 </body>
 </html>
+
 
