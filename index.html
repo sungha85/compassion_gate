@@ -215,6 +215,32 @@
 /* === 모달 표시 보강 === */
 #more-modal { display: flex; }                     /* 기본 표시를 flex로 (안보이는 문제 방지) */
 #more-modal[aria-hidden="true"] { display: none; } /* 닫을 때만 숨기기 */
+/* === 6칸 고정 슬롯(3x2) + 반응형 === */
+.grid > section{display:flex;flex-direction:column;height:100%}
+.grid > section .folder{display:flex;flex-direction:column;height:100%;min-height:280px}
+.grid > section .apps{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:10px;
+}
+@media (max-width: 900px){ .grid > section .apps{ grid-template-columns:repeat(2,1fr);} }
+@media (max-width: 520px){ .grid > section .apps{ grid-template-columns:1fr;} }
+
+/* 슬롯: 앱/더보기/빈칸 모두 같은 높이로 */
+.app, .more-tile, .slot-empty{
+  display:flex;align-items:center;justify-content:center;flex-direction:column;gap:6px;min-height:92px;
+}
+
+/* 더보기 타일(앱과 동일 사이즈로 표시) */
+.more-tile{
+  border-radius:16px;border:1px dashed #dbe1e8;background:#f8fafc;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.6);
+  cursor:pointer;font-weight:700;
+}
+.more-tile:hover{background:#f1f5f9}
+
+/* 빈 슬롯(자리만 차지하고 보이지 않음) */
+.slot-empty{ visibility:hidden; }
 
   
 </style>
@@ -904,6 +930,92 @@
   });
 
   applyAppLinks();
+/* ===================== 6슬롯(5앱+더보기) 레이아웃 ===================== */
+(function setupSixSlots(){
+  const MAX_FIXED = 5; // 보여줄 앱 슬롯 개수
+  document.querySelectorAll('#quick-grid > section .apps').forEach(appsEl=>{
+    // 기존에 만든 더보기/빈슬롯이 있으면 정리
+    appsEl.querySelectorAll('.more-tile, .slot-empty').forEach(n=>n.remove());
+
+    const apps = [...appsEl.querySelectorAll('.app')];
+    // 5개 이후는 접어두기
+    const hidden = apps.slice(MAX_FIXED);
+    hidden.forEach(a=>a.style.display='none');
+
+    // 5개 미만이면 빈칸으로 채우기
+    const need = Math.max(0, MAX_FIXED - Math.min(apps.length, MAX_FIXED));
+    for(let i=0;i<need;i++){
+      const ph = document.createElement('span');
+      ph.className = 'slot-empty';
+      appsEl.appendChild(ph);
+    }
+
+    // 6번째: 더보기 타일(항상 표시)
+    const more = document.createElement('button');
+    more.type = 'button';
+    more.className = 'app more-tile';
+    more.setAttribute('aria-haspopup', 'dialog');
+
+    // 앱과 동일한 구조(배지+라벨)로 표현
+    const badge = document.createElement('div');
+    badge.className = 'badge c-gray';
+    badge.textContent = hidden.length ? `+${hidden.length}` : '+0';
+    const label = document.createElement('div');
+    label.className = 'label';
+    label.textContent = '더보기';
+
+    more.appendChild(badge);
+    more.appendChild(label);
+    appsEl.appendChild(more);
+  });
+})();
+
+/* ===================== 더보기 모달 (위임) ===================== */
+(function moreModalDelegation(){
+  const quickGrid = document.getElementById('quick-grid');
+  const modal  = document.getElementById('more-modal');
+  const box    = document.getElementById('more-grid');
+  const title  = document.getElementById('more-title');
+  const closeB = document.getElementById('more-close');
+
+  function openFor(appsEl){
+    const apps = [...appsEl.querySelectorAll('.app')]; // 모든 앱(숨긴 것도 포함)
+    const groupLabel = appsEl.closest('section')?.querySelector('.folder-label span')?.textContent?.trim() || '앱 목록';
+    title.textContent = groupLabel;
+
+    box.innerHTML = '';
+    apps.forEach(a=>{
+      const card = document.createElement('a');
+      card.className = 'more-app';
+      card.href = a.href || '#';
+      card.target = a.target || '_blank';
+      if(a.rel) card.rel = a.rel;
+      const b = a.querySelector('.badge')?.cloneNode(true);
+      const l = a.querySelector('.label')?.cloneNode(true);
+      if(b) card.appendChild(b);
+      if(l) card.appendChild(l);
+      box.appendChild(card);
+    });
+
+    modal.setAttribute('aria-hidden','false');
+    document.body.style.overflow='hidden';
+    closeB?.focus();
+  }
+
+  quickGrid?.addEventListener('click', e=>{
+    const btn = e.target.closest('.more-tile');
+    if(!btn) return;
+    const appsEl = btn.closest('.apps');
+    if(appsEl) openFor(appsEl);
+  });
+
+  const close = ()=>{ modal.setAttribute('aria-hidden','true'); document.body.style.overflow=''; };
+  closeB?.addEventListener('click', close);
+  modal?.addEventListener('click', e=>{ if(e.target.id === 'more-modal') close(); });
+  document.addEventListener('keydown', e=>{ if(modal.getAttribute('aria-hidden')==='false' && e.key==='Escape') close(); });
+})();
+
+  
   /* ===================== +N 더보기 칩 + 모달 ===================== */
 (function setupMoreChips(){
   const MAX_VISIBLE = 6; // 카드 안에서 항상 보여줄 앱 개수(원하면 8 등으로 조절)
@@ -972,6 +1084,7 @@
 </script>
 </body>
 </html>
+
 
 
 
