@@ -212,9 +212,7 @@
 }
 .more-app .badge{transform:none} /* 모달 안에선 점프 효과 제거 */
 .more-footer{display:flex;gap:8px;justify-content:flex-end;margin-top:14px}
-/* === 모달 표시 보강 === */
-#more-modal { display: flex; z-index:9999; }                     /* 기본 표시를 flex로 (안보이는 문제 방지) */
-#more-modal[aria-hidden="true"] { display: none; } /* 닫을 때만 숨기기 */
+
 /* === 6칸 고정 슬롯(3x2) + 반응형 === */
 .grid > section{display:flex;flex-direction:column;height:100%}
 .grid > section .folder{display:flex;flex-direction:column;height:100%;min-height:280px}
@@ -241,7 +239,9 @@
 
 /* 빈 슬롯(자리만 차지하고 보이지 않음) */
 .slot-empty{ visibility:hidden; }
-
+/* === 모달 표시 보강 === */
+#more-modal { display: flex; z-index:9999; }                     /* 기본 표시를 flex로 (안보이는 문제 방지) */
+#more-modal[aria-hidden="true"] { display: none; } /* 닫을 때만 숨기기 */
   
 </style>
 </head>
@@ -1084,6 +1084,7 @@
 </script>
 </body>
 </html>
+
 
 
 
