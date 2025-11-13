@@ -950,7 +950,7 @@
       appsEl.appendChild(ph);
     }
 
-    // 6번째: 더보기 타일(항상 표시)
+      // 6번째: 더보기 타일(항상 표시)
     const more = document.createElement('button');
     more.type = 'button';
     more.className = 'app more-tile';
@@ -966,7 +966,15 @@
 
     more.appendChild(badge);
     more.appendChild(label);
-    appsEl.appendChild(more);
+
+    // ✅ 항상 6번째 슬롯(두 번째 줄의 세 번째 칸)에 위치 고정
+    const children = [...appsEl.children].filter(el => el.style.display !== 'none');
+    if (children.length >= 5) {
+      appsEl.insertBefore(more, children[5]);  // 0부터 세서 5 = 여섯 번째
+    } else {
+      appsEl.appendChild(more);
+    }
+
   });
 })();
 
@@ -1160,6 +1168,7 @@
 </script>
 </body>
 </html>
+
 
 
 
