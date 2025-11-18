@@ -125,7 +125,10 @@
         <label for="lane">레인(팀)</label>
         <select id="lane" name="lane"></select>
       </div>
-
+      <div class="row full">
+        <label for="refLink">링크(신청or참조)</label>
+        <input id="refLink" name="refLink" type="text" placeholder="신청 링크 or 일정에 참고할 링크를 넣으세요." />
+      </div>
       <div class="row full">
         <label for="note">메모</label>
         <input id="note" name="note" type="text" placeholder="비고(선택)" />
@@ -280,6 +283,7 @@
     const isDeadline = $('#isDeadline').checked;
     const lane = $('#lane').value;
     const note = $('#note').value.trim();
+    const refLink = $('#refLink').value.trim();
 
     if(!title || !start || !end || !lane){
       toast('필수 항목을 확인하세요.'); return;
@@ -287,7 +291,7 @@
 
     try{
       await addDoc(col, {
-        title, category, start, end, lane, isDeadline, note,
+        title, category, start, end, lane, isDeadline, note, refLink,
         createdAt: serverTimestamp()
       });
       (e.target).reset();

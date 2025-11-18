@@ -1,106 +1,44 @@
 <!DOCTYPE html>
 <html lang="ko" dir="ltr">
 <head>
+  <link rel="icon" href="./img/favicon.ico">
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <meta name="color-scheme" content="light" />
-<title>사내 포털 – 바로가기 + 전사일정</title>
-<style>
-  :root{
-    --bg:#f6f7f9; --folder:#ffffff; --line:rgba(0,0,0,.06); --card:#fff; --grid:#e5e7eb; --text:#0f172a;
-    --focus:#2563eb; --muted:#64748b; --shadow:0 12px 24px rgba(0,0,0,.06);
-    --lane-h:64px; --lane-gap:1px; --left-col:160px; --header-h:34px; --cell-pad:8px;
-  }
-  *{box-sizing:border-box}
-  html,body{height:100%}
-  body{margin:24px; font-family:system-ui,-apple-system,Segoe UI,Roboto,Apple SD Gothic Neo,Noto Sans KR,sans-serif; background:var(--bg); color:var(--text)}
-  img{max-width:100%; display:block}
-  a{color:inherit; text-decoration:none}
-  a:focus-visible,button:focus-visible{outline:3px solid var(--focus); outline-offset:3px; border-radius:8px}
-  .visually-hidden{position:absolute!important;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
-
-  h1{margin:0 0 20px; font-size:18px}
-  h2{margin:28px 0 12px; font-size:16px}
-  .container{max-width:1200px; margin:0 auto}
-  .grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:24px}
-
-  /* 폴더 카드 */
-  .folder{background:var(--folder);border-radius:28px;padding:18px 16px;border:1px solid var(--line);
-          box-shadow:var(--shadow), inset 0 1px 0 rgba(255,255,255,.7); transition:transform .15s, box-shadow .15s}
-  .folder:hover{ transform:translateY(-2px); box-shadow:0 16px 30px rgba(0,0,0,.08), inset 0 1px 0 rgba(255,255,255,.7) }
-  .apps{display:grid; grid-template-columns:repeat(3,1fr); gap:10px}
-  .app{display:flex; align-items:center; justify-content:center; flex-direction:column; color:var(--text); gap:6px; min-height:92px}
-  .badge{width:58px;height:58px;border-radius:16px;display:flex;align-items:center;justify-content:center;box-shadow:inset 0 1px 0 rgba(255,255,255,.25), 0 6px 14px rgba(0,0,0,.08);transition:transform .12s, box-shadow .12s; font-weight:700; font-size:12px; color:#fff}
-  .app:hover .badge{ transform:translateY(-1px); box-shadow:inset 0 1px 0 rgba(255,255,255,.25), 0 10px 18px rgba(0,0,0,.12) }
-  .label{font-size:10px;color:#334155;text-align:center;max-width:84px;line-height:1.2}
-  .c-red{background:linear-gradient(135deg,#ff6a7a,#ff3d3d)}
-  .c-purple{background:linear-gradient(135deg,#a77bff,#7a4cff)}
-  .c-sky{background:linear-gradient(135deg,#79b6ff,#4a8dff)}
-  .c-orange{background:linear-gradient(135deg,#ffa552,#ff7a1a)}
-  .c-green{background:linear-gradient(135deg,#55d6a9,#26b87a)}
-  .c-blue{background:linear-gradient(135deg,#6e8cff,#3b5bff)}
-  .c-teal{background:linear-gradient(135deg,#64e0e3,#28c3d6)}
-  .c-gray{background:linear-gradient(135deg,#c9ced6,#9aa3ad)}
-  .folder-label{display:flex;align-items:center;justify-content:center;gap:6px;margin-top:8px;font-size:14px}
-  .folder-label .emoji{display:none !important;}
-
-  /* 카드 */
-  .card{background:var(--card);border:1px solid var(--grid);border-radius:14px;box-shadow:0 2px 6px rgba(0,0,0,.04)}
-
-  /* 컨트롤(세그 탭) */
-  .controls{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:10px 0 6px}
-  .seg{display:inline-flex;border:1px solid var(--grid);border-radius:10px;overflow:hidden}
-  .seg button{padding:8px 12px;border:0;background:#fff;font-size:12px;cursor:pointer}
-  .seg button[aria-pressed="true"]{background:#eef2ff;font-weight:600}
-
-  /* 캘린더 상단 */
-  .sp-hero{margin:28px 0 8px}
-  .sp-titlebar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:6px}
-  .sp-titlebar h2{margin:0;font-size:22px}
-  .sp-sub{margin:6px 0 0;color:#64748b;font-size:13px}
-  .btn{border:1px solid var(--grid);background:#fff;border-radius:10px;padding:8px 12px;font-size:13px;cursor:pointer}
-  .btn.ghost{background:#fafafa}
-  .btn.primary{background:#2563eb;color:#fff;border-color:#2563eb}
-
-  /* 제목 라인만 하이라이트 */
-  .title-strip{
-    display:flex; align-items:center; justify-content:space-between;
-    padding:20px 18px; margin:0 0 14px; border-radius:14px; color:#fff;
-    box-shadow:0 8px 20px rgba(17,38,94,.18);
-    background:linear-gradient(135deg,#2a5eec,#6a8ef2);
-  }
-  .title-strip .btn.ghost{background:rgba(255,255,255,.16); color:#fff; border-color:transparent}
-  .title-strip .btn.ghost:hover{background:rgba(255,255,255,.24)}
-
-  /* 연간 매트릭스 */
-  .year-grid{position:relative;overflow:hidden}
-  .header,.row{display:grid;grid-template-columns:var(--left-col) repeat(12,1fr)}
-  .header div,.row div{padding:var(--cell-pad);border-bottom:1px solid var(--grid)}
-  .header{background:#f7f8fa;font-size:12px;font-weight:600;position:sticky;top:0;z-index:2}
-  .lane-name{padding:10px 12px;border-right:1px solid var(--grid);display:flex;align-items:center;font-size:12px;font-weight:600;background:#f9fafb;color:#111827}
-  .cell{height:var(--lane-h);border-left:1px solid var(--grid)}
-  .row .cell:first-child{border-left:none}
-  .grid-lines{position:absolute;inset:var(--header-h) 0 0 var(--left-col);display:grid;grid-template-columns:repeat(12,1fr);pointer-events:none}
-  .grid-lines div{border-left:1px dashed #e6e6e6}
-  .bar-layer{position:absolute;inset:var(--header-h) 0 0 var(--left-col)}
-  .event{position:absolute;height:26px;border-radius:8px;padding:4px 8px;font-size:12px;line-height:18px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer;box-shadow:0 1px 3px rgba(0,0,0,.08);border:1px solid rgba(0,0,0,.05);font-weight:600}
-  .today-line{position:absolute;top:var(--header-h);bottom:0;width:2px;background:#2563eb33;pointer-events:none}
-
-  @media print{
-    body{margin:0}
-    .grid,.imgbox,.hint,h1,.controls,.sp-hero{display:none}
-    .year-grid{border:0}
-  }
-</style>
+<title>컴패션 즐겨찾기</title>
+  <link rel="stylesheet" href="./css/main.css" />
 </head>
 <body>
 <div class="container" role="main">
-
   <!-- 상단 타이틀 -->
-  <h1 class="title-strip">
+  <h1 class="main-title title-strip">
     <span>컴패션 즐겨찾기</span>
   </h1>
+  <!-- 마감임박 롤링 -->
+     <div class="rolling-list">
+      <div class="rolling-track">
+        <!-- 실제 게시글 리스트 -->
+        <div class="rolling-item">
+          <span class="badge-dday">D-11</span>
+          <span class="post-title">법정의무교육</span>
+          <span class="post-meta">~ 2025.11.30</span>
+        </div>
 
+        <div class="rolling-item">
+          <span class="badge-dday">D-1</span>
+          <span class="post-title">DCP 수료식</span>
+          <span class="post-meta">~ 2025.11.19</span>
+        </div>
+
+        <!-- 첫 번째 아이템을 한 번 더 복사 (부드러운 무한 롤링용) -->
+       <div class="rolling-item">
+          <span class="badge-dday">D-11</span>
+          <span class="post-title">법정의무교육</span>
+          <span class="post-meta">~ 2025.11.30</span>
+        </div>
+
+      </div>
+    </div>
   <!-- ===== 빠른 바로가기 그리드 ===== -->
   <div class="grid" id="quick-grid">
     <!-- 현황 -->
@@ -121,16 +59,66 @@
     <section aria-labelledby="sec-pc">
       <div class="folder" role="group" aria-labelledby="sec-pc">
         <div class="apps">
-          <a class="app" data-key="인사근태" href="http://gwa.compassion.or.kr/gw/bizbox.do" target="_blank" rel="noopener noreferrer" title="인사근태"><div class="badge c-red">근태</div><div class="label">인사근태</div></a>
-          <a class="app" data-key="조직도" href="https://compassionkorea.sharepoint.com/:b:/s/share/EVwEjJlrN2JGs9_tak31NVABfFJgdYNMhtQGLq0ArpJZNA?e=HZ27fL" target="_blank" rel="noopener noreferrer"><div class="badge c-sky">OC</div><div class="label">조직도</div></a>
-          <a class="app" data-key="연락처" href="https://compassionkorea.sharepoint.com/:b:/s/share/EW4HfbQ0aUdEsSm7fBLWAHMBbWviKQ6R6FUxvvXu7P3k7Q?e=padbKz" target="_blank" rel="noopener noreferrer"><div class="badge c-purple">연락</div><div class="label">연락처</div></a>
-          <a class="app" data-key="사번" href="#" target="_blank" rel="noopener noreferrer"><div class="badge c-orange">ID</div><div class="label">사번</div></a>
-          <a class="app" data-key="LMS 교육" href="https://hrd.compassion.or.kr/index.do" target="_blank" rel="noopener noreferrer"><div class="badge c-green">LMS</div><div class="label">LMS 교육</div></a>
-          <span></span><span></span><span></span>
-        </div>
-      </div>
-      <div class="folder-label" id="sec-pc"><span>P&amp;C</span></div>
-    </section>
+<!-- 인사근태 -->
+      <a class="app"
+         data-key="인사근태"
+         href="http://gwa.compassion.or.kr/gw/bizbox.do"
+         target="_blank"
+         rel="noopener noreferrer"
+         data-tooltip="출퇴근, 연차 등 근태를 확인할 수 있습니다.">
+        <div class="badge c-red"><span aria-hidden="true">근태</span></div>
+        <div class="label">인사근태</div>
+      </a>
+
+      <!-- 조직도 -->
+      <a class="app"
+         data-key="조직도"
+         href="https://compassionkorea.sharepoint.com/:b:/s/share/EVwEjJlrN2JGs9_tak31NVABfFJgdYNMhtQGLq0ArpJZNA?e=HZ27fL"
+         target="_blank"
+         rel="noopener noreferrer"
+         data-tooltip="부서와 팀 구성을 한눈에 확인할 수 있습니다.">
+        <div class="badge c-sky">OC</div>
+        <div class="label">조직도</div>
+      </a>
+
+      <!-- 연락처 -->
+      <a class="app"
+         data-key="연락처"
+         href="https://compassionkorea.sharepoint.com/:b:/s/share/EW4HfbQ0aUdEsSm7fBLWAHMBbWviKQ6R6FUxvvXu7P3k7Q?e=padbKz"
+         target="_blank"
+         rel="noopener noreferrer"
+         data-tooltip="사내 주요 연락처를 확인할 수 있습니다.">
+        <div class="badge c-purple">연락</div>
+        <div class="label">연락처</div>
+      </a>
+
+      <!-- 사번 -->
+      <a class="app"
+         data-key="사번"
+         href="#"
+         target="_blank"
+         rel="noopener noreferrer"
+         data-tooltip="사번 관련 정보를 조회하거나 관리할 수 있습니다.">
+        <div class="badge c-orange">ID</div>
+        <div class="label">사번</div>
+      </a>
+
+      <!-- LMS 교육 -->
+      <a class="app"
+         data-key="LMS 교육"
+         href="https://hrd.compassion.or.kr/index.do"
+         target="_blank"
+         rel="noopener noreferrer"
+         data-tooltip="사내 교육 플랫폼(LMS) 수강 및 이력 관리가 가능합니다.">
+        <div class="badge c-green">LMS</div>
+        <div class="label">LMS 교육</div>
+      </a>
+
+      <span></span><span></span><span></span>
+    </div>
+  </div>
+  <div class="folder-label" id="sec-pc"><span>P&amp;C</span></div>
+</section>
 
     <!-- 재경 -->
     <section aria-labelledby="sec-fin">
@@ -212,16 +200,36 @@
 
   <!-- ====================== 전사일정 & 행사 ====================== -->
   <section class="sp-hero" aria-labelledby="ecal-title">
-    <div class="sp-titlebar">
+    <div class="sp-titlebar title-strip">
       <h2 id="ecal-title">Enterprise Calendar</h2>
       <div class="sp-actions" role="toolbar" aria-label="Calendar actions">
-        <button type="button" class="btn ghost" id="btn-compact" aria-pressed="false" title="밀집 보기">Compact</button>
-        <button type="button" class="btn" id="btn-export" title="CSV로 내보내기">Export</button>
-        <a class="btn primary" id="btn-add" target="_blank" href="https://sungha85.github.io/compassion_gate/event/" title="일정 추가">Add Event</a>
+        <a class="btn primary" id="btn-add" target="_blank" href="https://sungha85.github.io/compassion_gate/event/" title="일정 추가">일정 등록</a>
       </div>
     </div>
-    <p class="sp-sub">상단 탭에서 ‘Enterprise Calendar / 주요사역 / 신청’을 전환하면 좌측 레인이 바뀌고, 해당 레인의 일정만 표시됩니다.</p>
+    <!-- <p class="sp-sub">상단 탭에서 ‘Enterprise Calendar / 주요사역 / 신청’을 전환하면 좌측 레인이 바뀌고, 해당 레인의 일정만 표시됩니다.</p> -->
   </section>
+ <!-- 연/월 컨트롤 -->
+ <div class="cal-controls">
+  <!-- 이전 달 -->
+  <button class="btn" id="prev-month" title="이전 달">◀</button>
+
+  <!-- 모바일 전용: 현재 연/월 표시 -->
+  <span id="mobile-month-label" class="mobile-only"></span>
+
+  <!-- 데스크탑용: 연도 선택 + 월 버튼 -->
+  <select id="year-select" aria-label="연도 선택"></select>
+  <div class="seg" id="month-buttons" role="tablist" aria-label="월 선택"></div>
+
+  <!-- 다음 달 -->
+  <button class="btn" id="next-month" title="다음 달">▶</button>
+
+  <!-- 연간 보기(데스크탑에서만 표시될 예정) -->
+  <span class="view-annual mobile-d-none">
+    <label style="margin-left:auto;display:flex;align-items:center;gap:6px;">
+      <input type="checkbox" id="toggle-annual"> 연간 보기
+    </label>
+  </span>
+</div>
 
   <!-- 메인 카테고리 탭 -->
   <div class="controls" aria-label="메인 카테고리">
@@ -233,21 +241,23 @@
   </div>
 
   <!-- 연간 매트릭스 -->
-  <div class="card year-grid" style="margin-top:8px" id="year-grid" aria-labelledby="year-title">
-    <div id="year-title" class="visually-hidden" aria-hidden="true">연간 일정 매트릭스</div>
-    <div class="header">
-      <div style="border-right:1px solid var(--grid)"></div>
-      <div>1월</div><div>2월</div><div>3월</div><div>4월</div><div>5월</div><div>6월</div>
-      <div>7월</div><div>8월</div><div>9월</div><div>10월</div><div>11월</div><div>12월</div>
+   <div class="year-grid-wrap">
+    <div class="card year-grid" style="margin-top:8px" id="year-grid" aria-labelledby="year-title">
+      <div id="year-title" class="visually-hidden" aria-hidden="true">연간 일정 매트릭스</div>
+      <div class="header" id="grid-header">
+        <div style="border-right:1px solid var(--grid)"></div>
+        <div>1월</div><div>2월</div><div>3월</div><div>4월</div><div>5월</div><div>6월</div>
+        <div>7월</div><div>8월</div><div>9월</div><div>10월</div><div>11월</div><div>12월</div>
+      </div>
+      <div id="lane-rows"></div>
+      <div class="grid-lines"  id="grid-lines" aria-hidden="true">
+        <div></div><div></div><div></div><div></div><div></div><div></div>
+        <div></div><div></div><div></div><div></div><div></div><div></div>
+      </div>
+      <div class="today-line" id="today-line" aria-hidden="true"></div>
+      <div class="bar-layer" id="bar-layer"></div>
     </div>
-    <div id="lane-rows"></div>
-    <div class="grid-lines" aria-hidden="true">
-      <div></div><div></div><div></div><div></div><div></div><div></div>
-      <div></div><div></div><div></div><div></div><div></div><div></div>
     </div>
-    <div class="today-line" id="today-line" aria-hidden="true"></div>
-    <div class="bar-layer" id="bar-layer"></div>
-  </div>
 </div>
 
 <!-- 공용 모달 -->
@@ -262,189 +272,22 @@
     </div>
   </div>
 </div>
-
-<script type="module">
-  /* ===================== Firestore 연동 + 3-그룹 탭 달력 ===================== */
-
-  // 헬퍼
-  const $ = (s)=>document.querySelector(s);
-  const KST = new Intl.DateTimeFormat('ko-KR',{ timeZone:'Asia/Seoul', dateStyle:'medium' });
-  const fmtRange = (s,e)=> `${KST.format(s)} ~ ${KST.format(e)}`;
-  const parseDate = (s)=>{ const [y,m,d] = (s||'').split('-').map(Number); return new Date(y, m-1, d); };
-
-  // 메인 그룹과 레인
-  const GROUPS = {
-    "Enterprise Calendar": ["ELT Meetings","GMC","Cross Funtional PJT","전략","재경","인사","컴플라이언스","IT"],
-    "주요사역": ["온라인","행사","콘텐츠","VT"],
-    "신청": ["CS","전사교육","마감"]
-  };
-  const LANE_TO_GROUP = {
-    "ELT Meetings":"Enterprise Calendar","GMC":"Enterprise Calendar","Cross Funtional PJT":"Enterprise Calendar","전략":"Enterprise Calendar","재경":"Enterprise Calendar","인사":"Enterprise Calendar","컴플라이언스":"Enterprise Calendar","IT":"Enterprise Calendar",
-    "온라인":"주요사역","행사":"주요사역","콘텐츠":"주요사역","VT":"주요사역",
-    "CS":"신청","전사교육":"신청","마감":"신청"
-  };
-  let activeGroup = "주요사역"; // ← 기본 시작 그룹
-
-  // 레인 그리드 구성
-  const laneRows = $("#lane-rows");
-  function renderLaneGrid(){
-    if(!laneRows) return;
-    laneRows.innerHTML = "";
-    (GROUPS[activeGroup]||[]).forEach(name=>{
-      const row = document.createElement("div");
-      row.className = "row";
-      row.innerHTML = `<div class="lane-name">${name}</div>` + Array.from({length:12}).map(()=>`<div class="cell"></div>`).join("");
-      laneRows.appendChild(row);
-    });
-  }
-  renderLaneGrid();
-
-  // 탭 토글
-  const groupTabs = $("#group-tabs");
-  if (groupTabs){
-    groupTabs.addEventListener("click",(e)=>{
-      const btn = e.target.closest("button[data-group]");
-      if(!btn) return;
-      const g = btn.getAttribute("data-group");
-      if(g===activeGroup) return;
-      activeGroup = g;
-      [...groupTabs.querySelectorAll("button")].forEach(b=>{
-        b.setAttribute('aria-pressed', String(b===btn));
-      });
-      renderLaneGrid(); refresh();
-    });
-  }
-
-  // 바 렌더
-  const layer = $("#bar-layer");
-  const todayLine = $("#today-line");
-  function monthIndex(d){ return d.getMonth(); }
-  function monthSpan(s,e){ const months=(e.getFullYear()-s.getFullYear())*12+(e.getMonth()-s.getMonth())+1; return Math.max(1,months); }
-  function laneY(name){
-    const lanes = GROUPS[activeGroup]||[];
-    const idx = lanes.indexOf(name);
-    const header = 34;
-    const laneH  = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--lane-h'));
-    const gap    = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--lane-gap'));
-    return header + Math.max(0,idx)*(laneH+gap);
-  }
-  function renderTodayLine(){
-    const now=new Date(), m=now.getMonth(), d=now.getDate();
-    const dim=new Date(now.getFullYear(),m+1,0).getDate();
-    const frac=m+(d-1)/dim; const leftPct=(frac/12)*100;
-    if(todayLine) todayLine.style.left=`calc(${leftPct}% + var(--left-col))`;
-  }
-
-  let EVENTS = []; // Firestore에서 동기화
-
-  function inferGroupByLane(lane){ return LANE_TO_GROUP[lane] || "Enterprise Calendar"; }
-  function filtered(list){
-    const lanes = GROUPS[activeGroup]||[];
-    return list.filter(ev=>{
-      const g = ev.group || inferGroupByLane(ev.lane||"");
-      return (g===activeGroup) && lanes.includes(ev.lane);
-    });
-  }
-
-  function renderBars(){
-    if(!layer) return;
-    layer.innerHTML='';
-    filtered(EVENTS).forEach(ev=>{
-      if(!ev.start||!ev.end||!ev.lane) return;
-      const s=parseDate(ev.start), e=parseDate(ev.end);
-      if(isNaN(s)||isNaN(e)) return;
-      const sIdx=monthIndex(s), span=monthSpan(s,e);
-      const bar=document.createElement('div');
-      bar.className=`event t-${ev.lane}`;
-      bar.style.left = `calc(${(sIdx/12)*100}% + 6px)`;
-      bar.style.top  = `${laneY(ev.lane)+18}px`;
-      bar.style.width= `calc(${(span/12)*100}% - 12px)`;
-      bar.tabIndex=0; bar.setAttribute('role','button');
-      bar.setAttribute('aria-label',`${ev.lane} · ${ev.title} · ${ev.start} ~ ${ev.end}`);
-      bar.textContent=ev.title||'(제목 없음)';
-      bar.addEventListener('click',()=>openModal(ev));
-      bar.addEventListener('keydown',(e)=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();openModal(ev);}});
-      layer.appendChild(bar);
-    });
-    renderTodayLine();
-  }
-  function refresh(){ renderBars(); }
-  window.addEventListener('resize', refresh);
-
-  // 모달
-  function openModal(ev){
-    $("#m-title").textContent = ev.title || '(제목 없음)';
-    const s=parseDate(ev.start), e=parseDate(ev.end);
-    $("#m-when").textContent = (ev.start&&ev.end)?`일정: ${fmtRange(s,e)}`:'';
-    $("#m-dept").textContent = `레인: ${ev.lane||''} · 카테고리: ${ev.category||''}`;
-    $("#m-note").textContent = ev.note?`메모: ${ev.note}`:'';
-    const modal=$("#modal");
-    modal.style.display='flex'; modal.setAttribute('aria-hidden','false');
-    document.body.style.overflow='hidden'; $("#closeBtn").focus();
-  }
-  function closeModal(){ const m=$("#modal"); m.style.display='none'; m.setAttribute('aria-hidden','true'); document.body.style.overflow=''; }
-  $("#modal")?.addEventListener('click',e=>{ if(e.target.id==='modal') closeModal(); });
-  document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeModal(); });
-  $("#closeBtn")?.addEventListener('click',closeModal);
-
-  // CSV
-  $("#btn-export")?.addEventListener('click', ()=>{
-    const headers=["title","start","end","lane","category","note"];
-    const rows=[headers.join(",")].concat(
-      EVENTS.map(ev=>headers.map(h=>{
-        const val=(ev[h]??"").toString().replace(/"/g,'""');
-        return /[",\n]/.test(val)?`"${val}"`:val;
-      }).join(","))
-    );
-    const blob=new Blob([rows.join("\n")],{type:"text/csv;charset=utf-8;"});
-    const url=URL.createObjectURL(blob); const a=document.createElement('a');
-    a.href=url; a.download='enterprise-calendar.csv'; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
-  });
-
-  // Firebase (v10 CDN)
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-app.js";
-  import { getFirestore, collection, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-firestore.js";
-  const firebaseConfig = {
-    apiKey: "AIzaSyBsTMadItNXG9YqmtFYr9bX6lbt0qIh9FQ",
-    authDomain: "dcp-page.firebaseapp.com",
-    projectId: "dcp-page",
-    storageBucket: "dcp-page.firebasestorage.app",
-    messagingSenderId: "1056273445903",
-    appId: "1:1056273445903:web:9e924f9bd476a860af1f7a",
-    measurementId: "G-CZS1G9M1KQ"
-  };
-  const app = initializeApp(firebaseConfig);
-  const db  = getFirestore(app);
-
-  // Firestore 구독 → EVENTS 반영 → 렌더
-  const q = query(collection(db,'events'), orderBy('createdAt','desc'));
-  onSnapshot(q, (snap)=>{
-    const list=[];
-    snap.forEach(doc=>{
-      const d=doc.data();
-      list.push({
-        id: doc.id,
-        title: d.title||'',
-        start: d.start||'',
-        end  : d.end||'',
-        lane : d.lane||'',
-        category: d.category||'',
-        group: d.group||'', // 있으면 사용
-        note : d.note||''
-      });
-    });
-    // 시작일 기준 오름차순으로 보이도록 정렬
-    list.sort((a,b)=> (a.start||'').localeCompare(b.start||''));
-    EVENTS=list;
-    refresh();
-  }, (err)=>console.error('onSnapshot error:',err));
-
-  // Compact 토글
-  $("#btn-compact")?.addEventListener('click', ()=>{
-    const on = document.body.classList.toggle('compact');
-    $("#btn-compact").setAttribute('aria-pressed', String(on));
-    refresh();
-  });
-</script>
+<!-- ★ 추가: 빠른바로가기 “더보기” 모달 -->
+<div id="more-modal" aria-hidden="true" role="dialog" aria-modal="true"
+     aria-labelledby="more-title"
+     style="display:none;align-items:center;justify-content:center;position:fixed;inset:0;background:rgba(0,0,0,.45);padding:20px;z-index:50">
+  <div class="box" style="background:#fff;border-radius:14px;padding:18px;max-width:600px;width:100%;border:1px solid var(--grid);box-shadow:0 10px 30px rgba(0,0,0,.15);display:flex;flex-direction:column;gap:12px">
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:8px">
+      <h3 id="more-title" style="margin:0;font-size:16px">앱 목록</h3>
+      <button class="btn ghost" id="more-close" type="button">닫기</button>
+    </div>
+    <div id="more-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:8px">
+      <!-- quickgrid.js에서 .more-app 타일들이 동적으로 채워짐 -->
+    </div>
+  </div>
+</div>
+<script type="module" src="./js/calendar.js"></script>
+  <script type="module" src="./js/tooltip.js"></script>
+  <script type="module" src="./js/quickgrid.js"></script>
 </body>
 </html>
