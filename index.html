@@ -930,53 +930,70 @@
   });
 
   applyAppLinks();
-/* ===================== 6슬롯(5앱+더보기) 레이아웃 ===================== */
+/* ===================== 6슬롯(5앱+더보기) 레이아웃 (개선 버전) ===================== */
 (function setupSixSlots(){
-  const MAX_FIXED = 5; // 보여줄 앱 슬롯 개수
+  const MAX_VISIBLE = 5;   // 기본으로 보여줄 앱 개수
+  const TOTAL_SLOTS  = 6;  // 항상 6칸(3x2)
+
   document.querySelectorAll('#quick-grid > section .apps').forEach(appsEl=>{
-    // 기존에 만든 더보기/빈슬롯이 있으면 정리
-    appsEl.querySelectorAll('.more-tile, .slot-empty').forEach(n=>n.remove());
-
+    // 1) 이 폴더 안의 앱만 뽑아두고, 컨테이너는 싹 비운다
     const apps = [...appsEl.querySelectorAll('.app')];
-    // 5개 이후는 접어두기
-    const hidden = apps.slice(MAX_FIXED);
-    hidden.forEach(a=>a.style.display='none');
+    const total = apps.length;
 
-    // 5개 미만이면 빈칸으로 채우기
-    const need = Math.max(0, MAX_FIXED - Math.min(apps.length, MAX_FIXED));
-    for(let i=0;i<need;i++){
-      const ph = document.createElement('span');
-      ph.className = 'slot-empty';
-      appsEl.appendChild(ph);
+    // 컨테이너 정리: 기존 children 다 제거(옛날 span, slot-empty 등 포함)
+    appsEl.innerHTML = '';
+
+    // 앱이 5개 이하인 경우: 더보기 없이 모두 노출
+    if (total <= MAX_VISIBLE) {
+      // 앱 전부 다시 붙이기
+      apps.forEach(a=>{
+        a.style.display = '';     // 보이게
+        appsEl.appendChild(a);
+      });
+      // 6칸 맞춰서 빈 슬롯 채우기
+      for (let i = total; i < TOTAL_SLOTS; i++) {
+        const ph = document.createElement('span');
+        ph.className = 'slot-empty';
+        appsEl.appendChild(ph);
+      }
+      return;
     }
 
-      // 6번째: 더보기 타일(항상 표시)
+    // 앱이 5개 초과인 경우: 앞 5개만 노출 + 6번째에 더보기
+    const visible = apps.slice(0, MAX_VISIBLE);
+    const hidden  = apps.slice(MAX_VISIBLE);
+
+    // 1~5번 앱
+    visible.forEach(a=>{
+      a.style.display = '';
+      appsEl.appendChild(a);
+    });
+
+    // 6번째: 더보기 타일
     const more = document.createElement('button');
     more.type = 'button';
     more.className = 'app more-tile';
     more.setAttribute('aria-haspopup', 'dialog');
 
-    // 앱과 동일한 구조(배지+라벨)로 표현
     const badge = document.createElement('div');
     badge.className = 'badge c-gray';
-    badge.textContent = hidden.length ? `+${hidden.length}` : '+0';
+    badge.textContent = `+${hidden.length}`;  // 숨겨진 개수
     const label = document.createElement('div');
     label.className = 'label';
     label.textContent = '더보기';
 
     more.appendChild(badge);
     more.appendChild(label);
+    appsEl.appendChild(more);      // ✅ 항상 6번째 칸
 
-    // ✅ 항상 6번째 슬롯(두 번째 줄의 세 번째 칸)에 위치 고정
-    const children = [...appsEl.children].filter(el => el.style.display !== 'none');
-    if (children.length >= 5) {
-      appsEl.insertBefore(more, children[5]);  // 0부터 세서 5 = 여섯 번째
-    } else {
-      appsEl.appendChild(more);
-    }
-
+    // 숨겨진 앱들은 display:none 으로 뒤에 붙여둔다 (레이아웃엔 안 보이지만 모달에서 사용)
+    hidden.forEach(a=>{
+      a.style.display = 'none';
+      appsEl.appendChild(a);
+    });
   });
 })();
+
 
 /* ===================== 더보기 모달 (위임) ===================== */
 (function moreModalDelegation(){
@@ -1168,6 +1185,7 @@
 </script>
 </body>
 </html>
+
 
 
 
