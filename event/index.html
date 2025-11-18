@@ -26,7 +26,7 @@
   /* 폼 그리드 */
   .ea-form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
   .ea-form .row{display:flex;gap:8px;align-items:center}
-  .ea-form label{min-width:72px;color:#334155;font-size:12px}
+  .ea-form label{min-width:84px;color:#334155;font-size:12px}
   .ea-form input[type="text"], .ea-form input[type="date"], .ea-form select{
     width:100%;border:1px solid var(--ea-line);border-radius:10px;padding:10px 12px;font-size:13px;background:#fff
   }
@@ -57,12 +57,14 @@
   .ea-table tbody tr:hover{box-shadow:0 8px 18px rgba(0,0,0,.06)}
   .ea-td-actions{display:flex;gap:6px;justify-content:flex-end}
 
-  /* 배지 */
-  .badge{display:inline-flex;align-items:center;padding:4px 8px;border-radius:999px;
-    background:var(--ea-badge); color:var(--ea-badge-text); font-size:12px; gap:6px}
-  .badge.cat-행사{background:#f3e8ff;color:#6b21a8}
-  .badge.cat-업무{background:#eff6ff;color:#1d4ed8}
+  /* 배지(카테고리) */
+  .badge{display:inline-flex;align-items:center;padding:4px 8px;border-radius:999px;font-size:12px;gap:6px}
+  .badge.cat-Enterprise\ Calendar{background:#e6f0ff;color:#1d4ed8}
+  .badge.cat-주요사역{background:#f3e8ff;color:#6b21a8}
   .badge.cat-신청{background:#ecfdf5;color:#047857}
+
+  /* 마감 배지 */
+  .deadline{display:inline-flex;align-items:center;gap:6px;margin-left:8px;font-size:11px;padding:3px 8px;border-radius:999px;background:#fff7ed;color:#c2410c;border:1px solid #fed7aa}
 
   /* 모달 */
   .modal{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:center;justify-content:center;padding:20px;z-index:50}
@@ -98,7 +100,9 @@
       <div class="row">
         <label for="category">카테고리</label>
         <select id="category" name="category">
-          <option>행사</option><option>업무</option><option>신청</option>
+          <option>Enterprise Calendar</option>
+          <option>주요사역</option>
+          <option>신청</option>
         </select>
       </div>
 
@@ -113,11 +117,16 @@
       </div>
 
       <div class="row">
+        <label for="isDeadline">마감표시여부</label>
+        <input id="isDeadline" name="isDeadline" type="checkbox" />
+      </div>
+
+      <div class="row">
         <label for="lane">레인(팀)</label>
         <select id="lane" name="lane"></select>
       </div>
 
-      <div class="row">
+      <div class="row full">
         <label for="note">메모</label>
         <input id="note" name="note" type="text" placeholder="비고(선택)" />
       </div>
@@ -150,6 +159,7 @@
           <th>기간</th>
           <th>팀</th>
           <th>카테고리</th>
+          <th>마감표시</th>
           <th>메모</th>
           <th style="text-align:right">관리</th>
         </tr>
@@ -171,7 +181,9 @@
       <div>
         <label for="e-category">카테고리</label>
         <select id="e-category">
-          <option>행사</option><option>업무</option><option>신청</option>
+          <option>Enterprise Calendar</option>
+          <option>주요사역</option>
+          <option>신청</option>
         </select>
       </div>
       <div>
@@ -181,6 +193,10 @@
       <div>
         <label for="e-end">종료일</label>
         <input id="e-end" type="date" required />
+      </div>
+      <div>
+        <label for="e-isDeadline">마감표시여부</label>
+        <input id="e-isDeadline" type="checkbox" />
       </div>
       <div>
         <label for="e-lane">레인(팀)</label>
@@ -203,6 +219,7 @@
 <!-- Firebase + App 코드 -->
 <script type="module">
   /* -------------------- 기본 상수/DOM -------------------- */
+  // 필요 레인(팀) 목록: 기존과 동일 사용
   const LANES = ["대표실","컴플","전략","재경","P&C","미션","교파","교미","비전","무브","디이","마캠","브컴","크리","특후","IT","SE","SR"];
   const laneSel = document.getElementById('lane');
   const laneEditSel = document.getElementById('e-lane');
@@ -213,7 +230,7 @@
   function toast(msg){
     const t = $('#ea-toast');
     t.textContent = msg; t.style.display='block';
-    clearTimeout(window._t); window._t = setTimeout(()=> t.style.display='none', 1800);
+    clearTimeout(window._t); window._t = setTimeout(()=> t.style.display='none', 2000);
   }
 
   /* -------------------- Firebase 연결 -------------------- */
@@ -222,6 +239,9 @@
     getFirestore, collection, addDoc, doc, updateDoc, deleteDoc,
     serverTimestamp, onSnapshot
   } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-firestore.js";
+  import {
+    getAuth, signInAnonymously, onAuthStateChanged
+  } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-auth.js";
 
   const firebaseConfig = {
     apiKey: "AIzaSyBsTMadItNXG9YqmtFYr9bX6lbt0qIh9FQ",
@@ -236,25 +256,45 @@
   const app = initializeApp(firebaseConfig);
   const db  = getFirestore(app);
   const col = collection(db, 'events');
+  const auth = getAuth(app);
+
+  // ✅ 익명로그인: 보안규칙이 "auth != null"일 때 쓰기가 가능하도록
+  onAuthStateChanged(auth, (user)=>{
+    if(user){
+      toast('인증 완료');
+    }else{
+      signInAnonymously(auth).catch(err=>{
+        console.error('[Auth] anonymous sign-in failed:', err);
+        toast('인증 실패: ' + (err?.code || 'error'));
+      });
+    }
+  });
 
   /* -------------------- 등록 -------------------- */
   $('#event-form').addEventListener('submit', async (e)=>{
     e.preventDefault();
     const title = $('#title').value.trim();
-    const category = $('#category').value;
+    const category = $('#category').value; // Enterprise Calendar / 주요사역 / 신청
     const start = $('#start').value;
     const end = $('#end').value || start;
+    const isDeadline = $('#isDeadline').checked;
     const lane = $('#lane').value;
     const note = $('#note').value.trim();
 
-    if(!title || !start || !end || !lane){ toast('필수 항목을 확인하세요.'); return; }
+    if(!title || !start || !end || !lane){
+      toast('필수 항목을 확인하세요.'); return;
+    }
 
     try{
-      await addDoc(col, { title, category, start, end, lane, note, createdAt: serverTimestamp() });
+      await addDoc(col, {
+        title, category, start, end, lane, isDeadline, note,
+        createdAt: serverTimestamp()
+      });
       (e.target).reset();
       toast('등록되었습니다.');
     }catch(err){
-      console.error(err); toast('등록에 실패했습니다.');
+      console.error('[Firestore] addDoc error:', err);
+      toast('등록에 실패했습니다: ' + (err?.code || 'error'));
     }
   });
 
@@ -271,6 +311,9 @@
       EVENTS.push({ id:d.id, ...v });
     });
     renderList();
+  }, err=>{
+    console.error('[Firestore] snapshot error:', err);
+    toast('데이터 조회 실패: ' + (err?.code || 'error'));
   });
 
   $search.addEventListener('input', renderList);
@@ -310,9 +353,20 @@
 
       const tdCat   = document.createElement('td');
       const badge   = document.createElement('span');
-      badge.className = `badge cat-${v.category||'업무'}`;
-      badge.textContent= v.category||'업무';
+      const catName = v.category || 'Enterprise Calendar';
+      badge.className = `badge cat-${catName.replace(/\s/g,'\\ ')}`;
+      badge.textContent= catName;
       tdCat.appendChild(badge);
+
+      const tdDeadline = document.createElement('td');
+      if(v.isDeadline){
+        const dl = document.createElement('span');
+        dl.className = 'deadline';
+        dl.textContent = '마감표시';
+        tdDeadline.appendChild(dl);
+      }else{
+        tdDeadline.textContent = '-';
+      }
 
       const tdNote  = document.createElement('td'); tdNote.textContent  = v.note||'';
 
@@ -323,7 +377,7 @@
       btnD.onclick = ()=> del(v.id);
       tdAct.append(btnE, btnD);
 
-      tr.append(tdTitle, tdPeriod, tdLane, tdCat, tdNote, tdAct);
+      tr.append(tdTitle, tdPeriod, tdLane, tdCat, tdDeadline, tdNote, tdAct);
       tbody.appendChild(tr);
     });
   }
@@ -334,9 +388,10 @@
   function openEdit(v){
     editingId = v.id;
     $('#e-title').value = v.title||'';
-    $('#e-category').value = v.category||'업무';
+    $('#e-category').value = v.category||'Enterprise Calendar';
     $('#e-start').value = v.start||'';
     $('#e-end').value = v.end||'';
+    $('#e-isDeadline').checked = !!v.isDeadline;
     $('#e-lane').value = v.lane||LANES[0];
     $('#e-note').value = v.note||'';
     showModal(true);
@@ -348,13 +403,14 @@
     const category = $('#e-category').value;
     const start = $('#e-start').value;
     const end = $('#e-end').value || start;
+    const isDeadline = $('#e-isDeadline').checked;
     const lane = $('#e-lane').value;
     const note = $('#e-note').value.trim();
 
     if(!title || !start || !end || !lane){ toast('필수 항목을 확인하세요.'); return; }
 
     try{
-      await updateDoc(ref, { title, category, start, end, lane, note });
+      await updateDoc(ref, { title, category, start, end, lane, isDeadline, note });
       toast('수정되었습니다.');
       showModal(false);
     }catch(err){
