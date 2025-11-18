@@ -24,7 +24,7 @@
   .container{max-width:1200px; margin:0 auto}
   .grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:24px}
 
-  /* 폴더 카드 (바로가기) */
+  /* 폴더 카드 */
   .folder{background:var(--folder);border-radius:28px;padding:18px 16px;border:1px solid var(--line);
           box-shadow:var(--shadow), inset 0 1px 0 rgba(255,255,255,.7); transition:transform .15s, box-shadow .15s}
   .folder:hover{ transform:translateY(-2px); box-shadow:0 16px 30px rgba(0,0,0,.08), inset 0 1px 0 rgba(255,255,255,.7) }
@@ -42,15 +42,27 @@
   .c-teal{background:linear-gradient(135deg,#64e0e3,#28c3d6)}
   .c-gray{background:linear-gradient(135deg,#c9ced6,#9aa3ad)}
   .folder-label{display:flex;align-items:center;justify-content:center;gap:6px;margin-top:8px;font-size:14px}
-  .folder-label .emoji{display:none !important;} /* 이모지 제거 */
+  .folder-label .emoji{display:none !important;}
 
-  /* 버튼/컨트롤 공통 */
+  /* 카드 */
+  .card{background:var(--card);border:1px solid var(--grid);border-radius:14px;box-shadow:0 2px 6px rgba(0,0,0,.04)}
+
+  /* 컨트롤(세그 탭) */
+  .controls{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:10px 0 6px}
+  .seg{display:inline-flex;border:1px solid var(--grid);border-radius:10px;overflow:hidden}
+  .seg button{padding:8px 12px;border:0;background:#fff;font-size:12px;cursor:pointer}
+  .seg button[aria-pressed="true"]{background:#eef2ff;font-weight:600}
+
+  /* 캘린더 상단 */
+  .sp-hero{margin:28px 0 8px}
+  .sp-titlebar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:6px}
+  .sp-titlebar h2{margin:0;font-size:22px}
+  .sp-sub{margin:6px 0 0;color:#64748b;font-size:13px}
   .btn{border:1px solid var(--grid);background:#fff;border-radius:10px;padding:8px 12px;font-size:13px;cursor:pointer}
   .btn.ghost{background:#fafafa}
   .btn.primary{background:#2563eb;color:#fff;border-color:#2563eb}
-  .btn[aria-pressed="true"]{box-shadow:inset 0 0 0 2px #2563eb33}
 
-  /* ==== 제목 라인만 하이라이트 ==== */
+  /* 제목 라인만 하이라이트 */
   .title-strip{
     display:flex; align-items:center; justify-content:space-between;
     padding:20px 18px; margin:0 0 14px; border-radius:14px; color:#fff;
@@ -60,177 +72,39 @@
   .title-strip .btn.ghost{background:rgba(255,255,255,.16); color:#fff; border-color:transparent}
   .title-strip .btn.ghost:hover{background:rgba(255,255,255,.24)}
 
-  /* 캘린더 상단 (Hero) */
-  .sp-hero{margin:28px 0 8px}
-  .sp-titlebar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:6px}
-  .sp-titlebar h2{margin:0;font-size:22px}
-  .sp-sub{margin:6px 0 0;color:#64748b;font-size:13px}
-
-  /* 일정 컨트롤 바(연/월) */
-  .cal-controls{display:flex;gap:8px;align-items:center;margin:10px 0 6px;flex-wrap:wrap}
-  .cal-controls .seg{display:inline-flex;border:1px solid var(--grid);border-radius:10px;overflow:hidden}
-  .cal-controls .seg button{padding:6px 10px;border:0;background:#fff;font-size:12px;cursor:pointer}
-  .cal-controls .seg button[aria-pressed="true"]{background:#eef2ff}
-  .cal-controls select{border:1px solid var(--grid);border-radius:10px;padding:6px 10px;background:#fff}
-
-  /* 카드 */
-  .card{background:var(--card);border:1px solid var(--grid);border-radius:14px;box-shadow:0 2px 6px rgba(0,0,0,.04)}
-
-  /* 매트릭스 */
+  /* 연간 매트릭스 */
   .year-grid{position:relative;overflow:hidden}
-  .header,.row{display:grid}
+  .header,.row{display:grid;grid-template-columns:var(--left-col) repeat(12,1fr)}
   .header div,.row div{padding:var(--cell-pad);border-bottom:1px solid var(--grid)}
   .header{background:#f7f8fa;font-size:12px;font-weight:600;position:sticky;top:0;z-index:2}
   .lane-name{padding:10px 12px;border-right:1px solid var(--grid);display:flex;align-items:center;font-size:12px;font-weight:600;background:#f9fafb;color:#111827}
   .cell{height:var(--lane-h);border-left:1px solid var(--grid)}
   .row .cell:first-child{border-left:none}
-  .grid-lines{position:absolute;pointer-events:none}
+  .grid-lines{position:absolute;inset:var(--header-h) 0 0 var(--left-col);display:grid;grid-template-columns:repeat(12,1fr);pointer-events:none}
   .grid-lines div{border-left:1px dashed #e6e6e6}
-  .bar-layer{position:absolute}
+  .bar-layer{position:absolute;inset:var(--header-h) 0 0 var(--left-col)}
   .event{position:absolute;height:26px;border-radius:8px;padding:4px 8px;font-size:12px;line-height:18px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:pointer;box-shadow:0 1px 3px rgba(0,0,0,.08);border:1px solid rgba(0,0,0,.05);font-weight:600}
   .today-line{position:absolute;top:var(--header-h);bottom:0;width:2px;background:#2563eb33;pointer-events:none}
 
-  /* 레인 색상 */
-  .t-대표실{background:#e0f2fe}
-  .t-컴플{background:#e8f7ff}
-  .t-전략{background:#d1fae5}
-  .t-재경{background:#fef9c3}
-  .t-P\&C{background:#fee2e2}  /* P&C 이스케이프 */
-  .t-미션{background:#f5e8ff}
-  .t-교파{background:#e7fff2}
-  .t-교미{background:#fff0e5}
-  .t-비전{background:#ffe7fb}
-  .t-무브{background:#e0e7ff}
-  .t-디이{background:#f0f7e9}
-  .t-마캠{background:#e9f6ff}
-  .t-브컴{background:#fce9ff}
-  .t-크리{background:#fff3e9}
-  .t-특후{background:#e9fffb}
-  .t-IT{background:#e5e7eb}
-  .t-SE{background:#f2f2ff}
-  .t-SR{background:#f9f2ff}
-
-  @media (prefers-reduced-motion: reduce){ .folder,.badge{transition:none} }
   @media print{
     body{margin:0}
-    .grid,.imgbox,.hint,h1,.controls,.sp-hero,.cal-controls{display:none}
+    .grid,.imgbox,.hint,h1,.controls,.sp-hero{display:none}
     .year-grid{border:0}
   }
-/* ===== Tooltip (개선 버전) ===== */
-.tooltip{
-  position: fixed;
-  z-index: 9999;
-  max-width: 240px;             /* 고정 최대폭 */
-  padding: 10px 12px;
-  font-size: 12px;
-  line-height: 1.5;
-  border-radius: 10px;
-  background: #fff;
-  color: #111827;
-  border: 1px solid #e5e7eb;
-  box-shadow: 0 10px 24px rgba(0,0,0,.16);
-  pointer-events: none;
-  opacity: 0;
-  transform: translateY(-6px) scale(.98);
-  transition: opacity .14s ease, transform .14s ease;
-
-  /* 길게 늘어지지 않도록 */
-  white-space: normal;
-  word-break: keep-all;          /* 한글 단어 유지 */
-  overflow-wrap: anywhere;       /* 긴 URL 같은 건 줄바꿈 */
-  text-align: left;
-}
-
-/* 보이기 */
-.tooltip[data-show="true"]{
-  opacity: 1;
-  transform: translateY(0) scale(1);
-}
-
-/* 화살표 */
-.tooltip::after{
-  content:"";
-  position:absolute;
-  left:50%;
-  transform: translateX(-50%);
-  border:6px solid transparent;
-  filter: drop-shadow(0 2px 2px rgba(0,0,0,.08));
-}
-
-/* 위쪽 배치(기본) — 화살표가 아래를 향함 */
-.tooltip[data-pos="top"]::after{
-  bottom:-12px;
-  border-top-color:#fff;
-}
-
-/* 아래쪽 배치 — 화살표가 위를 향함 */
-.tooltip[data-pos="bottom"]::after{
-  top:-12px;
-  border-bottom-color:#fff;
-}
-
-  /* === 카드 높이 통일: grid-item(section)와 .folder를 늘려서 맞춤 === */
-.grid > section{ display:flex; flex-direction:column; height:100%; }
-.grid > section .folder{ display:flex; flex-direction:column; height:100%; }
-.grid > section .apps{ flex:1 1 auto; }           /* 아이콘 영역이 남는 높이를 차지 */
-
-/* (선택) 아이콘 그리드가 항상 고르게 보이게 */
-.grid > section .apps{ display:grid; grid-template-columns:repeat(3,1fr); gap:10px; }
-
-/* (선택) “모~든 카드 높이를 완전히 동일”하게 강제하고 싶다면 값 하나로 통일 */
-.grid > section .folder{ min-height:260px; }       /* ⑤ 카드 공통 최소높이(원하면 숫자 조절) */
-
-  /* === 카드 높이 통일 + 더보기 칩 === */
-.grid > section{display:flex;flex-direction:column;height:100%}
-.grid > section .folder{display:flex;flex-direction:column;height:100%;min-height:280px}
-.grid > section .apps{flex:1 1 auto}
-
-/* +N 더보기 칩 */
-.more-chip{
-  display:flex;align-items:center;justify-content:center;
-  gap:6px;height:92px;border-radius:16px;border:1px dashed #dbe1e8;
-  background:#f8fafc;color:#334155;cursor:pointer;font-size:12px;font-weight:700;
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.6);
-}
-.more-chip:hover{background:#f1f5f9}
-
-/* 모달(더보기) */
-#more-modal[aria-hidden="true"]{display:none}
-#more-modal{
-  position:fixed;inset:0;z-index:70;display:flex;align-items:center;justify-content:center;
-  padding:20px;background:rgba(0,0,0,.45)
-}
-.more-box{
-  background:#fff;border:1px solid var(--grid);border-radius:14px;max-width:780px;width:100%;
-  padding:16px;box-shadow:0 10px 30px rgba(0,0,0,.15)
-}
-.more-title{margin:0 0 10px;font-size:16px}
-.more-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:14px}
-.more-app{
-  display:flex;flex-direction:column;align-items:center;gap:8px;padding:12px;border:1px solid #eef2f6;
-  border-radius:12px;background:#fafafa
-}
-.more-app .badge{transform:none} /* 모달 안에선 점프 효과 제거 */
-.more-footer{display:flex;gap:8px;justify-content:flex-end;margin-top:14px}
-/* === 모달 표시 보강 === */
-#more-modal { display: flex; }                     /* 기본 표시를 flex로 (안보이는 문제 방지) */
-#more-modal[aria-hidden="true"] { display: none; } /* 닫을 때만 숨기기 */
-
-  
 </style>
 </head>
 <body>
 <div class="container" role="main">
 
-  <!-- 제목 한 줄 하이라이트 -->
+  <!-- 상단 타이틀 -->
   <h1 class="title-strip">
     <span>바로가기</span>
     <button id="app-links-btn" class="btn ghost" type="button">앱 링크</button>
   </h1>
 
-  <!-- ====================== 바로가기 (Quick Links) ====================== -->
+  <!-- ===== 빠른 바로가기 그리드 ===== -->
   <div class="grid" id="quick-grid">
-    <!-- 🐬 현황 -->
+    <!-- 현황 -->
     <section aria-labelledby="sec-Dashboard">
       <div class="folder" role="group" aria-labelledby="sec-Dashboard">
         <div class="apps">
@@ -244,72 +118,22 @@
       <div class="folder-label" id="sec-dashboard"><span>현황</span></div>
     </section>
 
-    <!-- ❤️ P&C -->
+    <!-- P&C -->
     <section aria-labelledby="sec-pc">
       <div class="folder" role="group" aria-labelledby="sec-pc">
         <div class="apps">
-<!-- 인사근태 -->
-      <a class="app"
-         data-key="인사근태"
-         href="http://gwa.compassion.or.kr/gw/bizbox.do"
-         target="_blank"
-         rel="noopener noreferrer"
-         data-tooltip="출퇴근, 연차 등 근태를 확인할 수 있습니다.">
-        <div class="badge c-red"><span aria-hidden="true">근태</span></div>
-        <div class="label">인사근태</div>
-      </a>
+          <a class="app" data-key="인사근태" href="http://gwa.compassion.or.kr/gw/bizbox.do" target="_blank" rel="noopener noreferrer" title="인사근태"><div class="badge c-red">근태</div><div class="label">인사근태</div></a>
+          <a class="app" data-key="조직도" href="https://compassionkorea.sharepoint.com/:b:/s/share/EVwEjJlrN2JGs9_tak31NVABfFJgdYNMhtQGLq0ArpJZNA?e=HZ27fL" target="_blank" rel="noopener noreferrer"><div class="badge c-sky">OC</div><div class="label">조직도</div></a>
+          <a class="app" data-key="연락처" href="https://compassionkorea.sharepoint.com/:b:/s/share/EW4HfbQ0aUdEsSm7fBLWAHMBbWviKQ6R6FUxvvXu7P3k7Q?e=padbKz" target="_blank" rel="noopener noreferrer"><div class="badge c-purple">연락</div><div class="label">연락처</div></a>
+          <a class="app" data-key="사번" href="#" target="_blank" rel="noopener noreferrer"><div class="badge c-orange">ID</div><div class="label">사번</div></a>
+          <a class="app" data-key="LMS 교육" href="https://hrd.compassion.or.kr/index.do" target="_blank" rel="noopener noreferrer"><div class="badge c-green">LMS</div><div class="label">LMS 교육</div></a>
+          <span></span><span></span><span></span>
+        </div>
+      </div>
+      <div class="folder-label" id="sec-pc"><span>P&amp;C</span></div>
+    </section>
 
-      <!-- 조직도 -->
-      <a class="app"
-         data-key="조직도"
-         href="https://compassionkorea.sharepoint.com/:b:/s/share/EVwEjJlrN2JGs9_tak31NVABfFJgdYNMhtQGLq0ArpJZNA?e=HZ27fL"
-         target="_blank"
-         rel="noopener noreferrer"
-         data-tooltip="부서와 팀 구성을 한눈에 확인할 수 있습니다.">
-        <div class="badge c-sky">OC</div>
-        <div class="label">조직도</div>
-      </a>
-
-      <!-- 연락처 -->
-      <a class="app"
-         data-key="연락처"
-         href="https://compassionkorea.sharepoint.com/:b:/s/share/EW4HfbQ0aUdEsSm7fBLWAHMBbWviKQ6R6FUxvvXu7P3k7Q?e=padbKz"
-         target="_blank"
-         rel="noopener noreferrer"
-         data-tooltip="사내 주요 연락처를 확인할 수 있습니다.">
-        <div class="badge c-purple">연락</div>
-        <div class="label">연락처</div>
-      </a>
-
-      <!-- 사번 -->
-      <a class="app"
-         data-key="사번"
-         href="#"
-         target="_blank"
-         rel="noopener noreferrer"
-         data-tooltip="사번 관련 정보를 조회하거나 관리할 수 있습니다.">
-        <div class="badge c-orange">ID</div>
-        <div class="label">사번</div>
-      </a>
-
-      <!-- LMS 교육 -->
-      <a class="app"
-         data-key="LMS 교육"
-         href="https://hrd.compassion.or.kr/index.do"
-         target="_blank"
-         rel="noopener noreferrer"
-         data-tooltip="사내 교육 플랫폼(LMS) 수강 및 이력 관리가 가능합니다.">
-        <div class="badge c-green">LMS</div>
-        <div class="label">LMS 교육</div>
-      </a>
-
-      <span></span><span></span><span></span>
-    </div>
-  </div>
-  <div class="folder-label" id="sec-pc"><span>P&amp;C</span></div>
-</section>
-
-    <!-- 🍑 재경 -->
+    <!-- 재경 -->
     <section aria-labelledby="sec-fin">
       <div class="folder" role="group" aria-labelledby="sec-fin">
         <div class="apps">
@@ -322,7 +146,7 @@
       <div class="folder-label" id="sec-fin"><span>재경</span></div>
     </section>
 
-    <!-- ✔ 신청/접수 -->
+    <!-- 신청/접수 -->
     <section aria-labelledby="sec-apply">
       <div class="folder" role="group" aria-labelledby="sec-apply">
         <div class="apps">
@@ -338,7 +162,7 @@
       <div class="folder-label" id="sec-apply"><span>신청/접수</span></div>
     </section>
 
-    <!-- 🐬 브랜딩 -->
+    <!-- 브랜딩 -->
     <section aria-labelledby="sec-brand">
       <div class="folder" role="group" aria-labelledby="sec-brand">
         <div class="apps">
@@ -352,7 +176,7 @@
       <div class="folder-label" id="sec-brand"><span>브랜딩</span></div>
     </section>
 
-    <!-- 💜 Website -->
+    <!-- Website -->
     <section aria-labelledby="sec-web">
       <div class="folder" role="group" aria-labelledby="sec-web">
         <div class="apps">
@@ -369,7 +193,7 @@
       <div class="folder-label" id="sec-web"><span>Website</span></div>
     </section>
 
-    <!-- 🧩 타기관 -->
+    <!-- 타기관 -->
     <section aria-labelledby="sec-ngo">
       <div class="folder" role="group" aria-labelledby="sec-ngo">
         <div class="apps">
@@ -386,49 +210,61 @@
       <div class="folder-label" id="sec-ngo"><span>타기관</span></div>
     </section>
   </div>
-  <!-- ====================== /바로가기 ====================== -->
 
-  <!-- ====================== 전사일정&행사 ====================== -->
+  <!-- ====================== 전사일정 & 행사 ====================== -->
   <section class="sp-hero" aria-labelledby="ecal-title">
     <div class="sp-titlebar">
       <h2 id="ecal-title">Enterprise Calendar</h2>
       <div class="sp-actions" role="toolbar" aria-label="Calendar actions">
         <button type="button" class="btn ghost" id="btn-compact" aria-pressed="false" title="밀집 보기">Compact</button>
         <button type="button" class="btn" id="btn-export" title="CSV로 내보내기">Export</button>
-        <!-- 새 창으로 Add Event -->
-        <a class="btn primary" id="btn-add" href="https://sungha85.github.io/compassion_gate/event/" target="_blank" rel="noopener" title="일정 추가">Add Event</a>
+        <a class="btn primary" id="btn-add" target="_blank" href="https://sungha85.github.io/compassion_gate/event/" title="일정 추가">Add Event</a>
       </div>
     </div>
-    <p class="sp-sub">원하는 연·월을 선택해 해당 달의 일정만 확인하세요.</p>
+    <p class="sp-sub">상단 탭에서 ‘Enterprise Calendar / 주요사역 / 신청’을 전환하면 좌측 레인이 바뀌고, 해당 레인의 일정만 표시됩니다.</p>
   </section>
 
-  <!-- 연/월 컨트롤 -->
-  <div class="cal-controls">
-    <button class="btn" id="prev-month" title="이전 달">◀</button>
-    <select id="year-select" aria-label="연도 선택"></select>
-    <div class="seg" id="month-buttons" role="tablist" aria-label="월 선택"></div>
-    <button class="btn" id="next-month" title="다음 달">▶</button>
-    <label style="margin-left:auto;display:flex;align-items:center;gap:6px;">
-      <input type="checkbox" id="toggle-annual"> 연간 보기
-    </label>
+  <!-- 메인 카테고리 탭 -->
+  <div class="controls" aria-label="메인 카테고리">
+    <div class="seg" id="group-tabs" role="tablist" aria-label="Main categories">
+      <button type="button" role="tab" data-group="Enterprise Calendar" aria-pressed="false">Enterprise Calendar</button>
+      <button type="button" role="tab" data-group="주요사역" aria-pressed="true">주요사역</button>
+      <button type="button" role="tab" data-group="신청" aria-pressed="false">신청</button>
+    </div>
   </div>
 
-  <!-- 캘린더 스냅샷(선택) -->
-  <div class="card imgbox" aria-label="전사 일정 이미지 미리보기">
-    <img id="calendar-thumb" src="enterprise-calendar.png" alt="Enterprise Calendar" loading="lazy" onclick="openImage()" onload="calendarImageReady()" onerror="calendarImageMissing()" />
-  </div>
-
-  <!-- 매트릭스 -->
+  <!-- 연간 매트릭스 -->
   <div class="card year-grid" style="margin-top:8px" id="year-grid" aria-labelledby="year-title">
-    <div id="year-title" class="visually-hidden" aria-hidden="true">일정 매트릭스</div>
-    <div class="header" id="grid-header"></div>
+    <div id="year-title" class="visually-hidden" aria-hidden="true">연간 일정 매트릭스</div>
+    <div class="header">
+      <div style="border-right:1px solid var(--grid)"></div>
+      <div>1월</div><div>2월</div><div>3월</div><div>4월</div><div>5월</div><div>6월</div>
+      <div>7월</div><div>8월</div><div>9월</div><div>10월</div><div>11월</div><div>12월</div>
+    </div>
     <div id="lane-rows"></div>
-    <div class="grid-lines" id="grid-lines" aria-hidden="true"></div>
+    <div class="grid-lines" aria-hidden="true">
+      <div></div><div></div><div></div><div></div><div></div><div></div>
+      <div></div><div></div><div></div><div></div><div></div><div></div>
+    </div>
     <div class="today-line" id="today-line" aria-hidden="true"></div>
     <div class="bar-layer" id="bar-layer"></div>
   </div>
+  <p class="hint">※ 앱 링크는 브라우저 로컬에 저장됩니다.</p>
+</div>
 
-  <p class="hint">※ Firestore 데이터와 실시간 동기화됩니다.</p>
+<!-- 앱 링크 편집 모달 -->
+<div id="app-links-modal" aria-hidden="true" role="dialog" aria-modal="true"
+     style="position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:center;justify-content:center;padding:20px;z-index:60">
+  <div style="background:#fff;border:1px solid var(--grid);border-radius:14px;max-width:720px;width:100%;padding:16px">
+    <h3 style="margin:0 0 8px">앱 링크 붙여넣기</h3>
+    <p class="muted" style="margin:0 0 8px">형식: <code>key,url</code></p>
+    <textarea id="app-links-text" style="width:100%;height:200px;border:1px solid var(--grid);border-radius:10px;padding:8px"
+      placeholder="key,url&#10;조직도,https://..."></textarea>
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:10px">
+      <button id="app-links-cancel" class="btn" type="button">취소</button>
+      <button id="app-links-apply" class="btn primary" type="button">적용</button>
+    </div>
+  </div>
 </div>
 
 <!-- 공용 모달 -->
@@ -438,198 +274,170 @@
     <p id="m-when" style="margin:6px 0 0;font-size:13px;color:#334155;white-space:pre-line"></p>
     <p id="m-dept" style="margin:6px 0 0;font-size:13px;color:#334155;white-space:pre-line"></p>
     <p id="m-note" style="margin:6px 0 0;font-size:13px;color:#334155;white-space:pre-line"></p>
-    <div class="modal-actions" style="display:flex;justify-content:flex-end;gap:8px;margin-top:16px"><button class="close btn" id="closeBtn">닫기 (Esc)</button></div>
-  </div>
-</div>
-
-<!-- 앱 링크 편집 모달 -->
-<div id="app-links-modal" aria-hidden="true" role="dialog" aria-modal="true"
-     style="position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:center;justify-content:center;padding:20px;z-index:60">
-  <div style="background:#fff;border:1px solid var(--grid);border-radius:14px;max-width:720px;width:100%;padding:16px">
-    <h3 style="margin:0 0 8px">앱 링크 붙여넣기</h3>
-    <p class="muted" style="margin:0 0 8px">형식: <code>key,url</code> — 예) <code>조직도,https://...</code></p>
-    <textarea id="app-links-text" style="width:100%;height:200px;border:1px solid var(--grid);border-radius:10px;padding:8px" placeholder="key,url&#10;조직도,https://..."></textarea>
-    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:10px">
-      <button id="app-links-cancel" class="btn" type="button">취소</button>
-      <button id="app-links-apply" class="btn primary" type="button">적용</button>
+    <div class="modal-actions" style="display:flex;justify-content:flex-end;gap:8px;margin-top:16px">
+      <button class="close btn" id="closeBtn">닫기 (Esc)</button>
     </div>
   </div>
 </div>
-<!-- 더보기 모달 -->
-<div id="more-modal" aria-hidden="true" role="dialog" aria-modal="true">
-  <div class="more-box" role="document">
-    <h3 class="more-title" id="more-title">더 많은 앱</h3>
-    <div class="more-grid" id="more-grid" aria-labelledby="more-title"></div>
-    <div class="more-footer">
-      <button class="btn" id="more-close">닫기</button>
-    </div>
-  </div>
-</div>
-
-  
 
 <script type="module">
-  /* ===================== Firestore 연동 + 월/연도 보기 ===================== */
+  /* ===================== Firestore 연동 + 3-그룹 탭 달력 ===================== */
+
+  // 헬퍼
   const $ = (s)=>document.querySelector(s);
   const KST = new Intl.DateTimeFormat('ko-KR',{ timeZone:'Asia/Seoul', dateStyle:'medium' });
   const fmtRange = (s,e)=> `${KST.format(s)} ~ ${KST.format(e)}`;
-  const parseDate = (s)=>{ const [y,m,d] = s.split('-').map(Number); return new Date(y, m-1, d); };
-  const monthNames = ["1월","2월","3월","4월","5월","6월","7월","8월","9월","10월","11월","12월"];
+  const parseDate = (s)=>{ const [y,m,d] = (s||'').split('-').map(Number); return new Date(y, m-1, d); };
 
-  const LANES = ["대표실","컴플","전략","재경","P&C","미션","교파","교미","비전","무브","디이","마캠","브컴","크리","특후","IT","SE","SR"];
-  const CATEGORIES = ["행사","업무","신청"];
+  // 메인 그룹과 레인
+  const GROUPS = {
+    "Enterprise Calendar": ["ELT Meetings","GMC","Cross Funtional PJT","전략","재경","인사","컴플라이언스","IT"],
+    "주요사역": ["온라인","행사","콘텐츠","VT"],
+    "신청": ["CS","전사교육","마감"]
+  };
+  const LANE_TO_GROUP = {
+    "ELT Meetings":"Enterprise Calendar","GMC":"Enterprise Calendar","Cross Funtional PJT":"Enterprise Calendar","전략":"Enterprise Calendar","재경":"Enterprise Calendar","인사":"Enterprise Calendar","컴플라이언스":"Enterprise Calendar","IT":"Enterprise Calendar",
+    "온라인":"주요사역","행사":"주요사역","콘텐츠":"주요사역","VT":"주요사역",
+    "CS":"신청","전사교육":"신청","마감":"신청"
+  };
+  let activeGroup = "주요사역"; // ← 기본 시작 그룹
 
-  const headerEl = $("#grid-header");
-  const rowsEl = $("#lane-rows");
-  const linesEl = $("#grid-lines");
-  const layerEl = $("#bar-layer");
-  const todayEl = $("#today-line");
+  // 레인 그리드 구성
+  const laneRows = $("#lane-rows");
+  function renderLaneGrid(){
+    if(!laneRows) return;
+    laneRows.innerHTML = "";
+    (GROUPS[activeGroup]||[]).forEach(name=>{
+      const row = document.createElement("div");
+      row.className = "row";
+      row.innerHTML = `<div class="lane-name">${name}</div>` + Array.from({length:12}).map(()=>`<div class="cell"></div>`).join("");
+      laneRows.appendChild(row);
+    });
+  }
+  renderLaneGrid();
 
-  // 뷰 상태
-  const today = new Date();
-  let viewYear  = today.getFullYear();
-  let viewMonth = today.getMonth()+1; // 1..12
-  let annual = false;
-
-  // 연/월 컨트롤
-  (function initYMControls(){
-    const ysel = $("#year-select");
-    const startY = today.getFullYear()-2, endY = today.getFullYear()+1;
-    for(let y=startY;y<=endY;y++){
-      const opt = document.createElement('option');
-      opt.value = y; opt.textContent = y+'년';
-      if(y===viewYear) opt.selected = true;
-      ysel.appendChild(opt);
-    }
-    ysel.addEventListener('change', ()=>{ viewYear = Number(ysel.value); buildGrid(); refresh(); });
-
-    const mwrap = $("#month-buttons");
-    monthNames.forEach((name,idx)=>{
-      const m = idx+1;
-      const b = document.createElement('button');
-      b.textContent = name;
-      b.setAttribute('role','tab');
-      b.setAttribute('aria-pressed', String(viewMonth===m));
-      b.addEventListener('click', ()=>{
-        viewMonth = m;
-        [...mwrap.children].forEach(x=>x.setAttribute('aria-pressed','false'));
-        b.setAttribute('aria-pressed','true');
-        if(!annual){ buildGrid(); refresh(); }
-        else refresh();
+  // 탭 토글
+  const groupTabs = $("#group-tabs");
+  if (groupTabs){
+    groupTabs.addEventListener("click",(e)=>{
+      const btn = e.target.closest("button[data-group]");
+      if(!btn) return;
+      const g = btn.getAttribute("data-group");
+      if(g===activeGroup) return;
+      activeGroup = g;
+      [...groupTabs.querySelectorAll("button")].forEach(b=>{
+        b.setAttribute('aria-pressed', String(b===btn));
       });
-      mwrap.appendChild(b);
+      renderLaneGrid(); refresh();
     });
-
-    $("#prev-month").addEventListener('click', ()=>{
-      if(viewMonth===1){ viewMonth=12; viewYear--; } else viewMonth--;
-      ysel.value = String(viewYear);
-      mwrap.children[viewMonth-1].click();
-    });
-    $("#next-month").addEventListener('click', ()=>{
-      if(viewMonth===12){ viewMonth=1; viewYear++; } else viewMonth++;
-      ysel.value = String(viewYear);
-      mwrap.children[viewMonth-1].click();
-    });
-
-    const tgl = $("#toggle-annual");
-    tgl.checked = annual;
-    tgl.addEventListener('change', ()=>{ annual = tgl.checked; buildGrid(); refresh(); });
-  })();
-
-  // 그리드 구성(연간/단월)
-  function buildGrid(){
-    headerEl.innerHTML = '';
-    rowsEl.innerHTML = '';
-    linesEl.innerHTML = '';
-    layerEl.innerHTML = '';
-
-    if(annual){
-      headerEl.style.gridTemplateColumns = `var(--left-col) repeat(12,1fr)`;
-      rowsEl.style.gridTemplateColumns   = `var(--left-col) repeat(12,1fr)`;
-      linesEl.style.inset = `var(--header-h) 0 0 var(--left-col)`;
-      linesEl.style.display = 'grid';
-      linesEl.style.gridTemplateColumns = `repeat(12,1fr)`;
-
-      const empty = document.createElement('div');
-      empty.style.borderRight = '1px solid var(--grid)';
-      headerEl.appendChild(empty);
-      for(let i=0;i<12;i++){
-        const m = document.createElement('div');
-        m.textContent = monthNames[i];
-        headerEl.appendChild(m);
-        const gl = document.createElement('div');
-        linesEl.appendChild(gl);
-      }
-    }else{
-      headerEl.style.gridTemplateColumns = `var(--left-col) 1fr`;
-      rowsEl.style.gridTemplateColumns   = `var(--left-col) 1fr`;
-      linesEl.style.inset = `var(--header-h) 0 0 var(--left-col)`;
-      linesEl.style.display = 'grid';
-      linesEl.style.gridTemplateColumns = `1fr`;
-
-      const empty = document.createElement('div');
-      empty.style.borderRight = '1px solid var(--grid)';
-      headerEl.appendChild(empty);
-      const m = document.createElement('div');
-      m.textContent = `${viewYear}년 ${monthNames[viewMonth-1]}`;
-      headerEl.appendChild(m);
-      const gl = document.createElement('div');
-      linesEl.appendChild(gl);
-    }
-
-    // 레인 행
-    LANES.forEach(name=>{
-      const row = document.createElement('div');
-      row.className = 'row';
-      row.style.gridTemplateColumns = annual ? `var(--left-col) repeat(12,1fr)` : `var(--left-col) 1fr`;
-      const lane = document.createElement('div');
-      lane.className = 'lane-name';
-      lane.textContent = name;
-      row.appendChild(lane);
-      const colCount = annual ? 12 : 1;
-      for(let i=0;i<colCount;i++){
-        const cell = document.createElement('div');
-        cell.className = 'cell';
-        row.appendChild(cell);
-      }
-      rowsEl.appendChild(row);
-    });
-
-    // 오늘 라인 (연간만)
-    if(annual){
-      const now = new Date();
-      if(now.getFullYear()===viewYear){
-        const month = now.getMonth();
-        const day = now.getDate();
-        const dim = new Date(now.getFullYear(), month+1, 0).getDate();
-        const frac = month + (day-1)/dim;
-        const leftPct = (frac/12)*100;
-        todayEl.style.left = `calc(${leftPct}% + var(--left-col))`;
-        todayEl.style.display = 'block';
-      }else{
-        todayEl.style.display = 'none';
-      }
-      todayEl.style.top = 'var(--header-h)';
-      todayEl.style.bottom = '0';
-    }else{
-      todayEl.style.display = 'none';
-    }
-
-    layerEl.style.inset = `var(--header-h) 0 0 var(--left-col)`;
   }
 
-  function laneY(laneName){
-    const idx = LANES.indexOf(laneName);
-    const header = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--header-h'));
-    const laneH = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--lane-h'));
-    const gap = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--lane-gap'));
-    return header + idx * (laneH + gap);
+  // 바 렌더
+  const layer = $("#bar-layer");
+  const todayLine = $("#today-line");
+  function monthIndex(d){ return d.getMonth(); }
+  function monthSpan(s,e){ const months=(e.getFullYear()-s.getFullYear())*12+(e.getMonth()-s.getMonth())+1; return Math.max(1,months); }
+  function laneY(name){
+    const lanes = GROUPS[activeGroup]||[];
+    const idx = lanes.indexOf(name);
+    const header = 34;
+    const laneH  = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--lane-h'));
+    const gap    = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--lane-gap'));
+    return header + Math.max(0,idx)*(laneH+gap);
+  }
+  function renderTodayLine(){
+    const now=new Date(), m=now.getMonth(), d=now.getDate();
+    const dim=new Date(now.getFullYear(),m+1,0).getDate();
+    const frac=m+(d-1)/dim; const leftPct=(frac/12)*100;
+    if(todayLine) todayLine.style.left=`calc(${leftPct}% + var(--left-col))`;
   }
 
-  // Firestore 구독
+  let EVENTS = []; // Firestore에서 동기화
+
+  function inferGroupByLane(lane){ return LANE_TO_GROUP[lane] || "Enterprise Calendar"; }
+  function filtered(list){
+    const lanes = GROUPS[activeGroup]||[];
+    return list.filter(ev=>{
+      const g = ev.group || inferGroupByLane(ev.lane||"");
+      return (g===activeGroup) && lanes.includes(ev.lane);
+    });
+  }
+
+  function renderBars(){
+    if(!layer) return;
+    layer.innerHTML='';
+    filtered(EVENTS).forEach(ev=>{
+      if(!ev.start||!ev.end||!ev.lane) return;
+      const s=parseDate(ev.start), e=parseDate(ev.end);
+      if(isNaN(s)||isNaN(e)) return;
+      const sIdx=monthIndex(s), span=monthSpan(s,e);
+      const bar=document.createElement('div');
+      bar.className=`event t-${ev.lane}`;
+      bar.style.left = `calc(${(sIdx/12)*100}% + 6px)`;
+      bar.style.top  = `${laneY(ev.lane)+18}px`;
+      bar.style.width= `calc(${(span/12)*100}% - 12px)`;
+      bar.tabIndex=0; bar.setAttribute('role','button');
+      bar.setAttribute('aria-label',`${ev.lane} · ${ev.title} · ${ev.start} ~ ${ev.end}`);
+      bar.textContent=ev.title||'(제목 없음)';
+      bar.addEventListener('click',()=>openModal(ev));
+      bar.addEventListener('keydown',(e)=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();openModal(ev);}});
+      layer.appendChild(bar);
+    });
+    renderTodayLine();
+  }
+  function refresh(){ renderBars(); }
+  window.addEventListener('resize', refresh);
+
+  // 모달
+  function openModal(ev){
+    $("#m-title").textContent = ev.title || '(제목 없음)';
+    const s=parseDate(ev.start), e=parseDate(ev.end);
+    $("#m-when").textContent = (ev.start&&ev.end)?`일정: ${fmtRange(s,e)}`:'';
+    $("#m-dept").textContent = `레인: ${ev.lane||''} · 카테고리: ${ev.category||''}`;
+    $("#m-note").textContent = ev.note?`메모: ${ev.note}`:'';
+    const modal=$("#modal");
+    modal.style.display='flex'; modal.setAttribute('aria-hidden','false');
+    document.body.style.overflow='hidden'; $("#closeBtn").focus();
+  }
+  function closeModal(){ const m=$("#modal"); m.style.display='none'; m.setAttribute('aria-hidden','true'); document.body.style.overflow=''; }
+  $("#modal")?.addEventListener('click',e=>{ if(e.target.id==='modal') closeModal(); });
+  document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeModal(); });
+  $("#closeBtn")?.addEventListener('click',closeModal);
+
+  // CSV
+  $("#btn-export")?.addEventListener('click', ()=>{
+    const headers=["title","start","end","lane","category","note"];
+    const rows=[headers.join(",")].concat(
+      EVENTS.map(ev=>headers.map(h=>{
+        const val=(ev[h]??"").toString().replace(/"/g,'""');
+        return /[",\n]/.test(val)?`"${val}"`:val;
+      }).join(","))
+    );
+    const blob=new Blob([rows.join("\n")],{type:"text/csv;charset=utf-8;"});
+    const url=URL.createObjectURL(blob); const a=document.createElement('a');
+    a.href=url; a.download='enterprise-calendar.csv'; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
+  });
+
+  // 앱 링크 로컬 저장/편집
+  const APP_LINKS_LS='portal:app_links:v2';
+  const APP_KEYS=["인사근태","조직도","연락처","사번","LMS 교육","Blue line","그룹웨어","Bizplay","Chat FIN",
+                  "브랜드 허브","유튜브","네이버 포스트","숏츠","글로벌 ONE","CSF","홈페이지","US","AU","UK","CA",
+                  "월드비전","유니세프","굿네이버스","세이브더칠드런","기아대책","초록우산","밀알","Scorecard","CDSP","KRI","LE","IT HELP","OA 서비스","업무요청","L&L","CS"];
+  const APP_LINKS_DEFAULT={"조직도":"https://compassionkorea.sharepoint.com/:b:/s/share/EVwEjJlrN2JGs9_tak31NVABfFJgdYNMhtQGLq0ArpJZNA?e=bXsScl"};
+  const loadAppLinks=()=>{try{const s=localStorage.getItem(APP_LINKS_LS);return s?JSON.parse(s):{...APP_LINKS_DEFAULT};}catch(e){return {...APP_LINKS_DEFAULT};}};
+  const saveAppLinks=(m)=>localStorage.setItem(APP_LINKS_LS,JSON.stringify(m));
+  const applyAppLinks=()=>{const map=loadAppLinks(); document.querySelectorAll('.app[data-key]').forEach(a=>{const k=a.getAttribute('data-key'), u=map[k]; if(u){a.href=u; a.target='_blank'; a.rel='noopener noreferrer'; a.title=(a.title||k)+' (열기)';}});};
+  applyAppLinks();
+  const $alb=$("#app-links-btn"), $alm=$("#app-links-modal"), $alt=$("#app-links-text"), $ala=$("#app-links-apply"), $alc=$("#app-links-cancel");
+  $alb.addEventListener('click',()=>{ $alm.style.display='flex'; $alm.setAttribute('aria-hidden','false'); const map=loadAppLinks(); $alt.value='key,url\n'+APP_KEYS.map(k=>`${k},${map[k]||''}`).join('\n'); $alt.focus(); });
+  $alc.addEventListener('click',()=>{ $alm.style.display='none'; $alm.setAttribute('aria-hidden','true'); });
+  $alm.addEventListener('click',e=>{ if(e.target.id==='app-links-modal'){ $alm.style.display='none'; $alm.setAttribute('aria-hidden','true'); }});
+  function parseLinksCSV(text){ const rows=text.trim().split(/\r?\n/).map(r=>r.split(',').map(s=>s.trim())); if(rows.length && /^key$/i.test(rows[0][0])) rows.shift(); const out={}; rows.forEach(([k,u])=>{ if(k) out[k]=u||'#';}); return out; }
+  $ala.addEventListener('click',()=>{ const parsed=parseLinksCSV($alt.value); if(!Object.keys(parsed).length){alert('데이터가 없습니다.');return;} const merged={...loadAppLinks(),...parsed}; saveAppLinks(merged); applyAppLinks(); $alm.style.display='none'; $alm.setAttribute('aria-hidden','true'); alert('앱 링크가 반영되었습니다.'); });
+
+  // Firebase (v10 CDN)
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-app.js";
   import { getFirestore, collection, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-firestore.js";
-
   const firebaseConfig = {
     apiKey: "AIzaSyBsTMadItNXG9YqmtFYr9bX6lbt0qIh9FQ",
     authDomain: "dcp-page.firebaseapp.com",
@@ -639,96 +447,31 @@
     appId: "1:1056273445903:web:9e924f9bd476a860af1f7a",
     measurementId: "G-CZS1G9M1KQ"
   };
-
   const app = initializeApp(firebaseConfig);
   const db  = getFirestore(app);
 
-  let EVENTS = [];
-  const eventsRef = collection(db, 'events');
-  const q = query(eventsRef, orderBy('start'));
-  onSnapshot(q, (snapshot)=>{
-    const next = [];
-    snapshot.forEach(doc=>{
-      const d = doc.data();
-      next.push({
+  // Firestore 구독 → EVENTS 반영 → 렌더
+  const q = query(collection(db,'events'), orderBy('createdAt','desc'));
+  onSnapshot(q, (snap)=>{
+    const list=[];
+    snap.forEach(doc=>{
+      const d=doc.data();
+      list.push({
         id: doc.id,
-        title: d.title || '(제목 없음)',
-        start: d.start || '',
-        end  : d.end   || '',
-        category: d.category || '',
-        lane: d.lane || '',
-        note: d.note || ''
+        title: d.title||'',
+        start: d.start||'',
+        end  : d.end||'',
+        lane : d.lane||'',
+        category: d.category||'',
+        group: d.group||'', // 있으면 사용
+        note : d.note||''
       });
     });
-    next.sort((a,b)=> (a.start||'').localeCompare(b.start||''));
-    EVENTS = next;
+    // 시작일 기준 오름차순으로 보이도록 정렬
+    list.sort((a,b)=> (a.start||'').localeCompare(b.start||''));
+    EVENTS=list;
     refresh();
-  }, (err)=> console.error('[Firestore] onSnapshot error:', err));
-
-  // 헬퍼: 해당 월과 겹치는가?
-  function intersectsMonth(ev, y, m){
-    if(!ev.start || !ev.end) return false;
-    const s = parseDate(ev.start), e = parseDate(ev.end);
-    const first = new Date(y, m-1, 1);
-    const last  = new Date(y, m, 0);
-    return s <= last && e >= first;
-  }
-
-  function renderBars(){
-    layerEl.innerHTML = '';
-    const list = annual ? EVENTS : EVENTS.filter(ev => intersectsMonth(ev, viewYear, viewMonth));
-
-    list.forEach(ev=>{
-      if(!ev.lane || LANES.indexOf(ev.lane)<0) return;
-
-      let leftPct = 0, widthPct = 100;
-      if(annual){
-        const s = parseDate(ev.start||`${viewYear}-01-01`);
-        const startIdx = Math.min(11, Math.max(0, s.getMonth()));
-        leftPct = (startIdx/12)*100;
-        const e = parseDate(ev.end||`${viewYear}-12-31`);
-        const months = (e.getFullYear()-s.getFullYear())*12 + (e.getMonth()-s.getMonth()) + 1;
-        widthPct = Math.max(1, Math.min(12, months)) / 12 * 100;
-      }else{
-        leftPct = 0; widthPct = 100; // 단월: 한 칸
-      }
-
-      const bar = document.createElement('div');
-      bar.className = `event t-${ev.lane}`;
-      bar.style.left = `calc(${leftPct}% + 6px)`;
-      bar.style.top  = `${laneY(ev.lane) + 18}px`;
-      bar.style.width= `calc(${widthPct}% - 12px)`;
-      bar.tabIndex = 0;
-      bar.setAttribute('role','button');
-      bar.setAttribute('aria-label', `${ev.lane} · ${ev.title} · ${ev.start} ~ ${ev.end} · ${ev.category}`);
-      bar.textContent = ev.title || '(제목 없음)';
-      bar.addEventListener('click', ()=>openModal(ev));
-      bar.addEventListener('keydown', (e)=>{ if(e.key==='Enter' || e.key===' ') { e.preventDefault(); openModal(ev); } });
-      layerEl.appendChild(bar);
-    });
-  }
-
-  function openModal(ev){
-    $("#m-title").textContent = ev.title || '(제목 없음)';
-    const s = ev.start?parseDate(ev.start):null, e = ev.end?parseDate(ev.end):null;
-    $("#m-when").textContent = (s && e) ? `일정: ${fmtRange(s,e)}` : '';
-    $("#m-dept").textContent = `팀: ${ev.lane||''} · 카테고리: ${ev.category||''}`;
-    $("#m-note").textContent = ev.note ? `메모: ${ev.note}` : '';
-    const modal = $("#modal");
-    modal.style.display='flex';
-    modal.setAttribute('aria-hidden','false');
-    document.body.style.overflow='hidden';
-    $("#closeBtn").focus();
-  }
-  function closeModal(){
-    const modal = $("#modal");
-    modal.style.display='none';
-    modal.setAttribute('aria-hidden','true');
-    document.body.style.overflow='';
-  }
-  $("#modal")?.addEventListener('click', (e)=>{ if(e.target.id==='modal') closeModal(); });
-  document.addEventListener('keydown', (e)=>{ if(e.key==='Escape') closeModal(); });
-  $("#closeBtn")?.addEventListener('click', closeModal);
+  }, (err)=>console.error('onSnapshot error:',err));
 
   // Compact 토글
   $("#btn-compact")?.addEventListener('click', ()=>{
@@ -736,252 +479,6 @@
     $("#btn-compact").setAttribute('aria-pressed', String(on));
     refresh();
   });
-
-  // Export CSV
-  $("#btn-export")?.addEventListener('click', ()=>{
-    const headers=["title","start","end","lane","category","note"];
-    const source = annual ? EVENTS : EVENTS.filter(ev => intersectsMonth(ev, viewYear, viewMonth));
-    const rows=[headers.join(",")].concat(
-      source.map(ev=>headers.map(h=>{
-        const val=(ev[h]??"").toString().replace(/"/g,'"');
-        return /[",\n]/.test(val)?`"${val}"`:val;
-      }).join(","))
-    );
-    const csv = rows.join("\n");
-    const blob = new Blob([csv], {type:"text/csv;charset=utf-8;"});
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url; a.download = `calendar_${annual?'year':'month'}.csv`;
-    document.body.appendChild(a); a.click(); a.remove();
-    URL.revokeObjectURL(url);
-  });
-
-  // 이미지 썸네일 모달
-  let imageAvailable=false;
-  window.calendarImageReady=()=>{ imageAvailable=true; };
-  window.calendarImageMissing=()=>{ imageAvailable=false; document.querySelector('.imgbox')?.remove(); };
-  window.openImage=()=>{
-    if(!imageAvailable) return;
-    $("#m-title").textContent='전사일정&행사 (이미지)';
-    $("#m-when").innerHTML='<img src="enterprise-calendar.png" style="width:100%;border:1px solid #e5e7eb;border-radius:8px" alt="calendar" />';
-    $("#m-dept").textContent='';
-    $("#m-note").textContent='';
-    const modal = $("#modal");
-    modal.style.display='flex';
-    modal.setAttribute('aria-hidden','false');
-    document.body.style.overflow='hidden';
-    $("#closeBtn").focus();
-  };
-
-  function refresh(){ renderBars(); }
-  window.addEventListener('resize', refresh);
-// ===== Tooltip (요소 중심 고정, top/bottom 자동 플립) =====
-(function setupTooltip(){
-  const tip = document.createElement('div');
-  tip.className = 'tooltip';
-  tip.setAttribute('role', 'tooltip');
-  tip.setAttribute('aria-hidden', 'true');
-  document.body.appendChild(tip);
-
-  let activeEl = null;
-
-  function placeTipFor(el){
-    if(!el) return;
-    const rect = el.getBoundingClientRect();
-    const margin = 10;       // 화면 모서리 여백
-    const gap = 10;          // 요소와 툴팁 간격
-
-    // 먼저 가운데 정렬로 놓고 크기 측정
-    tip.style.left = `${rect.left + rect.width/2}px`;
-    tip.style.top  = `${rect.top - gap}px`;
-    tip.style.transform = 'translate(-50%, -100%)'; // 위쪽 기준
-    tip.dataset.pos = 'top';
-
-    // 레이아웃 계산 후 화면 밖이면 아래쪽으로 플립
-    const r = tip.getBoundingClientRect();
-    if(r.top < margin){
-      tip.style.top = `${rect.bottom + gap}px`;
-      tip.style.transform = 'translate(-50%, 0)';   // 아래쪽 기준
-      tip.dataset.pos = 'bottom';
-    }
-
-    // 좌우도 화면 밖이면 살짝 안쪽으로 보정
-    const r2 = tip.getBoundingClientRect();
-    let left = r2.left, right = r2.right, vw = window.innerWidth;
-    let dx = 0;
-    if(left < margin) dx = margin - left;
-    else if(right > vw - margin) dx = (vw - margin) - right;
-    if(dx !== 0){
-      const currentLeft = parseFloat(tip.style.left);
-      tip.style.left = `${currentLeft + dx}px`;
-    }
-  }
-
-  function showTip(el){
-    const text = el.getAttribute('data-tooltip');
-    if(!text) return;
-    activeEl = el;
-    tip.textContent = text;
-    tip.dataset.show = 'true';
-    tip.setAttribute('aria-hidden', 'false');
-    placeTipFor(el);
-  }
-
-  function hideTip(){
-    activeEl = null;
-    tip.dataset.show = 'false';
-    tip.setAttribute('aria-hidden', 'true');
-  }
-
-  // 이벤트 위임: 마우스
-  document.addEventListener('mouseover', e=>{
-    const el = e.target.closest('[data-tooltip]');
-    if(!el) return;
-    showTip(el);
-  });
-  document.addEventListener('mouseout', e=>{
-    if(activeEl && !e.relatedTarget?.closest('[data-tooltip]')) hideTip();
-  });
-
-  // 키보드 접근성
-  document.addEventListener('focusin', e=>{
-    const el = e.target.closest('[data-tooltip]');
-    if(!el) return;
-    showTip(el);
-  });
-  document.addEventListener('focusout', e=>{
-    if(e.target.closest('[data-tooltip]')) hideTip();
-  });
-
-  // 리사이즈/스크롤 시 위치 재계산
-  ['scroll','resize'].forEach(type=>{
-    window.addEventListener(type, ()=>{
-      if(activeEl && tip.dataset.show === 'true') placeTipFor(activeEl);
-    }, { passive:true });
-  });
-})();
-
-  
-  // 최초 빌드/렌더
-  buildGrid();
-  refresh();
-
-  /* ===================== 앱 링크 편집(선택기능) ===================== */
-  const APP_LINKS_LS='portal:app_links:v2';
-  const $alb=document.getElementById('app-links-btn'),
-        $alm=document.getElementById('app-links-modal'),
-        $alt=document.getElementById('app-links-text'),
-        $ala=document.getElementById('app-links-apply'),
-        $alc=document.getElementById('app-links-cancel');
-
-  function loadAppLinks(){try{const s=localStorage.getItem(APP_LINKS_LS);return s?JSON.parse(s):{};}catch(e){return {};} }
-  function saveAppLinks(map){localStorage.setItem(APP_LINKS_LS,JSON.stringify(map));}
-  function applyAppLinks(){
-    const map=loadAppLinks();
-    document.querySelectorAll('.app[data-key]').forEach(a=>{
-      const key=a.getAttribute('data-key'); const url=map[key];
-      if(url){ a.href=url; a.target='_blank'; a.rel='noopener noreferrer'; a.title=(a.title||key)+' (열기)'; }
-    });
-  }
-  function openAL(){
-    $alm.style.display='flex';
-    $alm.setAttribute('aria-hidden','false');
-    const map=loadAppLinks();
-    const keys=[...document.querySelectorAll('.app[data-key]')].map(a=>a.getAttribute('data-key'));
-    const lines=keys.map(k=>`${k},${map[k]||''}`).join('\n');
-    $alt.value='key,url\n'+lines;
-    $alt.focus();
-  }
-  function closeAL(){ $alm.style.display='none'; $alm.setAttribute('aria-hidden','true'); }
-  function parseLinksCSV(text){
-    const rows=text.trim().split(/\r?\n/).map(r=>r.split(',').map(s=>s.trim()));
-    if(rows.length && /^key$/i.test(rows[0][0])) rows.shift();
-    const out={}; rows.forEach(([k,u])=>{ if(k) out[k]=u||'#'; }); return out;
-  }
-
-  $alb.addEventListener('click',openAL);
-  $alc.addEventListener('click',closeAL);
-  $alm.addEventListener('click',e=>{ if(e.target.id==='app-links-modal') closeAL(); });
-  $ala.addEventListener('click',()=>{
-    const parsed=parseLinksCSV($alt.value);
-    if(!Object.keys(parsed).length){alert('데이터가 없습니다.');return;}
-    const merged={...loadAppLinks(),...parsed};
-    saveAppLinks(merged); applyAppLinks(); closeAL();
-    alert('앱 링크가 반영되었습니다.');
-  });
-
-  applyAppLinks();
-  /* ===================== +N 더보기 칩 + 모달 ===================== */
-(function setupMoreChips(){
-  const MAX_VISIBLE = 6; // 카드 안에서 항상 보여줄 앱 개수(원하면 8 등으로 조절)
-
-  const sections = document.querySelectorAll('#quick-grid > section .apps');
-  sections.forEach(appsEl=>{
-    const apps = [...appsEl.querySelectorAll('.app')];
-    const hidden = apps.slice(MAX_VISIBLE);
-    if(hidden.length === 0) return;
-
-    // 숨길 것들 접기
-    hidden.forEach(a=>a.style.display='none');
-
-    // +N 칩 삽입
-    const chip = document.createElement('button');
-    chip.type = 'button';
-    chip.className = 'more-chip';
-    chip.setAttribute('aria-haspopup', 'dialog');
-    chip.innerHTML = `+${hidden.length} 더보기`;
-    appsEl.appendChild(chip);
-
-    // 칩 클릭 → 모달에 해당 그룹의 "모든 앱" 그리드로 렌더
-    chip.addEventListener('click', ()=>{
-      const modal = document.getElementById('more-modal');
-      const grid  = document.getElementById('more-grid');
-      const title = document.getElementById('more-title');
-
-      // 그룹 캡션(바로 아래 folder-label의 텍스트) 읽기
-      const groupLabel = appsEl.closest('section')?.querySelector('.folder-label span')?.textContent?.trim() || '앱 목록';
-      title.textContent = groupLabel;
-
-      grid.innerHTML = '';
-      apps.forEach(a=>{
-        const card = document.createElement('a');
-        card.className = 'more-app';
-        card.href = a.href || '#';
-        card.target = a.target || '_blank';
-        if(a.rel) card.rel = a.rel;
-
-        // 배지/라벨 복제
-        const b = a.querySelector('.badge')?.cloneNode(true);
-        const l = a.querySelector('.label')?.cloneNode(true);
-        if(b) card.appendChild(b);
-        if(l) card.appendChild(l);
-
-        grid.appendChild(card);
-      });
-
-      // 모달 표시
-      modal.setAttribute('aria-hidden','false');
-      modal.style.display='flex';
-      document.body.style.overflow='hidden';
-      document.getElementById('more-close').focus();
-    });
-  });
-
-  // 모달 닫기
-  const m = document.getElementById('more-modal');
-  const close = ()=>{ m.setAttribute('aria-hidden','true'); m.style.display='none'; document.body.style.overflow=''; };
-  document.getElementById('more-close').addEventListener('click', close);
-  m.addEventListener('click', e=>{ if(e.target.id === 'more-modal') close(); });
-  document.addEventListener('keydown', e=>{ if(m.getAttribute('aria-hidden')==='false' && e.key==='Escape') close(); });
-})();
-
-  
 </script>
 </body>
 </html>
-
-
-
-
-
-
