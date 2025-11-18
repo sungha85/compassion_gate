@@ -91,107 +91,6 @@
     .grid,.imgbox,.hint,h1,.controls,.sp-hero{display:none}
     .year-grid{border:0}
   }
-/* ===== Tooltip (개선 버전) ===== */
-.tooltip{
-  position: fixed;
-  z-index: 9999;
-  max-width: 240px;             /* 고정 최대폭 */
-  padding: 10px 12px;
-  font-size: 12px;
-  line-height: 1.5;
-  border-radius: 10px;
-  background: #fff;
-  color: #111827;
-  border: 1px solid #e5e7eb;
-  box-shadow: 0 10px 24px rgba(0,0,0,.16);
-  pointer-events: none;
-  opacity: 0;
-  transform: translateY(-6px) scale(.98);
-  transition: opacity .14s ease, transform .14s ease;
-
-  /* 길게 늘어지지 않도록 */
-  white-space: normal;
-  word-break: keep-all;          /* 한글 단어 유지 */
-  overflow-wrap: anywhere;       /* 긴 URL 같은 건 줄바꿈 */
-  text-align: left;
-}
-
-/* 보이기 */
-.tooltip[data-show="true"]{
-  opacity: 1;
-  transform: translateY(0) scale(1);
-}
-
-/* 화살표 */
-.tooltip::after{
-  content:"";
-  position:absolute;
-  left:50%;
-  transform: translateX(-50%);
-  border:6px solid transparent;
-  filter: drop-shadow(0 2px 2px rgba(0,0,0,.08));
-}
-
-/* 위쪽 배치(기본) — 화살표가 아래를 향함 */
-.tooltip[data-pos="top"]::after{
-  bottom:-12px;
-  border-top-color:#fff;
-}
-
-/* 아래쪽 배치 — 화살표가 위를 향함 */
-.tooltip[data-pos="bottom"]::after{
-  top:-12px;
-  border-bottom-color:#fff;
-}
-
-  /* === 카드 높이 통일: grid-item(section)와 .folder를 늘려서 맞춤 === */
-.grid > section{ display:flex; flex-direction:column; height:100%; }
-.grid > section .folder{ display:flex; flex-direction:column; height:100%; }
-.grid > section .apps{ flex:1 1 auto; }           /* 아이콘 영역이 남는 높이를 차지 */
-
-/* (선택) 아이콘 그리드가 항상 고르게 보이게 */
-.grid > section .apps{ display:grid; grid-template-columns:repeat(3,1fr); gap:10px; }
-
-/* (선택) “모~든 카드 높이를 완전히 동일”하게 강제하고 싶다면 값 하나로 통일 */
-.grid > section .folder{ min-height:260px; }       /* ⑤ 카드 공통 최소높이(원하면 숫자 조절) */
-
-  /* === 카드 높이 통일 + 더보기 칩 === */
-.grid > section{display:flex;flex-direction:column;height:100%}
-.grid > section .folder{display:flex;flex-direction:column;height:100%;min-height:280px}
-.grid > section .apps{flex:1 1 auto}
-
-/* +N 더보기 칩 */
-.more-chip{
-  display:flex;align-items:center;justify-content:center;
-  gap:6px;height:92px;border-radius:16px;border:1px dashed #dbe1e8;
-  background:#f8fafc;color:#334155;cursor:pointer;font-size:12px;font-weight:700;
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.6);
-}
-.more-chip:hover{background:#f1f5f9}
-
-/* 모달(더보기) */
-#more-modal[aria-hidden="true"]{display:none}
-#more-modal{
-  position:fixed;inset:0;z-index:70;display:flex;align-items:center;justify-content:center;
-  padding:20px;background:rgba(0,0,0,.45)
-}
-.more-box{
-  background:#fff;border:1px solid var(--grid);border-radius:14px;max-width:780px;width:100%;
-  padding:16px;box-shadow:0 10px 30px rgba(0,0,0,.15)
-}
-.more-title{margin:0 0 10px;font-size:16px}
-.more-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:14px}
-.more-app{
-  display:flex;flex-direction:column;align-items:center;gap:8px;padding:12px;border:1px solid #eef2f6;
-  border-radius:12px;background:#fafafa
-}
-.more-app .badge{transform:none} /* 모달 안에선 점프 효과 제거 */
-.more-footer{display:flex;gap:8px;justify-content:flex-end;margin-top:14px}
-/* === 모달 표시 보강 === */
-#more-modal { display: flex; }                     /* 기본 표시를 flex로 (안보이는 문제 방지) */
-#more-modal[aria-hidden="true"] { display: none; } /* 닫을 때만 숨기기 */
-
-  
 </style>
 </head>
 <body>
@@ -200,7 +99,6 @@
   <!-- 상단 타이틀 -->
   <h1 class="title-strip">
     <span>컴패션 즐겨찾기</span>
-    <button id="app-links-btn" class="btn ghost" type="button">앱 링크</button>
   </h1>
 
   <!-- ===== 빠른 바로가기 그리드 ===== -->
@@ -333,16 +231,6 @@
       <button type="button" role="tab" data-group="신청" aria-pressed="false">신청</button>
     </div>
   </div>
-  <!-- 연/월 컨트롤 -->
-  <div class="cal-controls">
-    <button class="btn" id="prev-month" title="이전 달">◀</button>
-    <select id="year-select" aria-label="연도 선택"></select>
-    <div class="seg" id="month-buttons" role="tablist" aria-label="월 선택"></div>
-    <button class="btn" id="next-month" title="다음 달">▶</button>
-    <label style="margin-left:auto;display:flex;align-items:center;gap:6px;">
-      <input type="checkbox" id="toggle-annual"> 연간 보기
-    </label>
-  </div>
 
   <!-- 연간 매트릭스 -->
   <div class="card year-grid" style="margin-top:8px" id="year-grid" aria-labelledby="year-title">
@@ -359,34 +247,6 @@
     </div>
     <div class="today-line" id="today-line" aria-hidden="true"></div>
     <div class="bar-layer" id="bar-layer"></div>
-  </div>
-
-  <!-- <p class="hint">※ Firestore 데이터와 실시간 동기화됩니다.</p> -->
-</div>
-
-<!-- 공용 모달 -->
-<div id="modal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="m-title" aria-describedby="m-when m-dept m-note" style="display:none;align-items:center;justify-content:center;position:fixed;inset:0;background:rgba(0,0,0,.45);padding:20px">
-  <div class="box" style="background:#fff;border-radius:14px;padding:18px;max-width:560px;width:100%;border:1px solid var(--grid);box-shadow:0 10px 30px rgba(0,0,0,.15)">
-    <h3 id="m-title" style="margin:0 0 8px;font-size:16px"></h3>
-    <p id="m-when" style="margin:6px 0 0;font-size:13px;color:#334155;white-space:pre-line"></p>
-    <p id="m-dept" style="margin:6px 0 0;font-size:13px;color:#334155;white-space:pre-line"></p>
-    <p id="m-note" style="margin:6px 0 0;font-size:13px;color:#334155;white-space:pre-line"></p>
-    <div class="modal-actions" style="display:flex;justify-content:flex-end;gap:8px;margin-top:16px"><button class="close btn" id="closeBtn">닫기 (Esc)</button></div>
-  </div>
-</div>
-
-<!-- 앱 링크 편집 모달 -->
-<div id="app-links-modal" aria-hidden="true" role="dialog" aria-modal="true"
-     style="position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:center;justify-content:center;padding:20px;z-index:60">
-  <div style="background:#fff;border:1px solid var(--grid);border-radius:14px;max-width:720px;width:100%;padding:16px">
-    <h3 style="margin:0 0 8px">앱 링크 붙여넣기</h3>
-    <p class="muted" style="margin:0 0 8px">형식: <code>key,url</code></p>
-    <textarea id="app-links-text" style="width:100%;height:200px;border:1px solid var(--grid);border-radius:10px;padding:8px"
-      placeholder="key,url&#10;조직도,https://..."></textarea>
-    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:10px">
-      <button id="app-links-cancel" class="btn" type="button">취소</button>
-      <button id="app-links-apply" class="btn primary" type="button">적용</button>
-    </div>
   </div>
 </div>
 
@@ -541,7 +401,6 @@
     a.href=url; a.download='enterprise-calendar.csv'; document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(url);
   });
 
- 
   // Firebase (v10 CDN)
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-app.js";
   import { getFirestore, collection, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-firestore.js";
@@ -586,187 +445,6 @@
     $("#btn-compact").setAttribute('aria-pressed', String(on));
     refresh();
   });
-
-  // Export CSV
-  $("#btn-export")?.addEventListener('click', ()=>{
-    const headers=["title","start","end","lane","category","note"];
-    const source = annual ? EVENTS : EVENTS.filter(ev => intersectsMonth(ev, viewYear, viewMonth));
-    const rows=[headers.join(",")].concat(
-      source.map(ev=>headers.map(h=>{
-        const val=(ev[h]??"").toString().replace(/"/g,'"');
-        return /[",\n]/.test(val)?`"${val}"`:val;
-      }).join(","))
-    );
-    const csv = rows.join("\n");
-    const blob = new Blob([csv], {type:"text/csv;charset=utf-8;"});
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url; a.download = `calendar_${annual?'year':'month'}.csv`;
-    document.body.appendChild(a); a.click(); a.remove();
-    URL.revokeObjectURL(url);
-  });
-
-  // 이미지 썸네일 모달
-  let imageAvailable=false;
-  window.calendarImageReady=()=>{ imageAvailable=true; };
-  window.calendarImageMissing=()=>{ imageAvailable=false; document.querySelector('.imgbox')?.remove(); };
-  window.openImage=()=>{
-    if(!imageAvailable) return;
-    $("#m-title").textContent='전사일정&행사 (이미지)';
-    $("#m-when").innerHTML='<img src="enterprise-calendar.png" style="width:100%;border:1px solid #e5e7eb;border-radius:8px" alt="calendar" />';
-    $("#m-dept").textContent='';
-    $("#m-note").textContent='';
-    const modal = $("#modal");
-    modal.style.display='flex';
-    modal.setAttribute('aria-hidden','false');
-    document.body.style.overflow='hidden';
-    $("#closeBtn").focus();
-  };
-
-  function refresh(){ renderBars(); }
-  window.addEventListener('resize', refresh);
-// ===== Tooltip (data-tooltip 속성 전용) =====
-(function setupTooltip(){
-  const tip = document.createElement('div');
-  tip.className = 'tooltip';
-  tip.setAttribute('role', 'tooltip');
-  tip.setAttribute('aria-hidden', 'true');
-  document.body.appendChild(tip);
-
-  let activeEl = null;
-
-  // 툴팁 위치 계산
-  function positionTip(x, y){
-    const offsetY = 18;
-    const vw = window.innerWidth;
-    const vh = window.innerHeight;
-    const margin = 10;
-    let left = x;
-    let top = y - offsetY;
-
-    tip.style.left = `${left}px`;
-    tip.style.top = `${top}px`;
-    const rect = tip.getBoundingClientRect();
-
-    if(rect.left < margin) left += (margin - rect.left);
-    if(rect.right > vw - margin) left -= (rect.right - (vw - margin));
-    if(rect.top < margin) top = y + offsetY;
-    if(rect.bottom > vh - margin) top = vh - margin - rect.height;
-
-    tip.style.left = `${left}px`;
-    tip.style.top = `${top}px`;
-  }
-
-  function showTip(el, x, y){
-    const text = el.getAttribute('data-tooltip');
-    if(!text) return;
-    activeEl = el;
-    tip.textContent = text;
-    tip.dataset.show = 'true';
-    tip.setAttribute('aria-hidden', 'false');
-    positionTip(x, y);
-  }
-
-  function hideTip(){
-    activeEl = null;
-    tip.dataset.show = 'false';
-    tip.setAttribute('aria-hidden', 'true');
-  }
-
-  // 마우스 이벤트 (위임)
-  document.addEventListener('mouseover', e=>{
-    const el = e.target.closest('[data-tooltip]');
-    if(!el) return;
-    showTip(el, e.clientX, e.clientY);
-  });
-  document.addEventListener('mousemove', e=>{
-    if(!activeEl) return;
-    positionTip(e.clientX, e.clientY);
-  });
-  document.addEventListener('mouseout', e=>{
-    if(activeEl && !e.relatedTarget?.closest('[data-tooltip]')) hideTip();
-  });
-
-  // 키보드 접근성
-  document.addEventListener('focusin', e=>{
-    const el = e.target.closest('[data-tooltip]');
-    if(!el) return;
-    const r = el.getBoundingClientRect();
-    showTip(el, r.left + r.width/2, r.top);
-  });
-  document.addEventListener('focusout', e=>{
-    if(e.target.closest('[data-tooltip]')) hideTip();
-  });
-
-  // 창 스크롤/리사이즈 시 위치 조정
-  window.addEventListener('scroll', ()=>{
-    if(!activeEl || tip.getAttribute('aria-hidden')==='true') return;
-    const r = activeEl.getBoundingClientRect();
-    positionTip(r.left + r.width/2, r.top);
-  }, { passive:true });
-
-  window.addEventListener('resize', ()=>{
-    if(!activeEl || tip.getAttribute('aria-hidden')==='true') return;
-    const r = activeEl.getBoundingClientRect();
-    positionTip(r.left + r.width/2, r.top);
-  });
-})();
-  // 최초 빌드/렌더
-  buildGrid();
-  refresh();
-
-  /* ===================== 앱 링크 편집(선택기능) ===================== */
-  const APP_LINKS_LS='portal:app_links:v2';
-  const $alb=document.getElementById('app-links-btn'),
-        $alm=document.getElementById('app-links-modal'),
-        $alt=document.getElementById('app-links-text'),
-        $ala=document.getElementById('app-links-apply'),
-        $alc=document.getElementById('app-links-cancel');
-
-  function loadAppLinks(){try{const s=localStorage.getItem(APP_LINKS_LS);return s?JSON.parse(s):{};}catch(e){return {};} }
-  function saveAppLinks(map){localStorage.setItem(APP_LINKS_LS,JSON.stringify(map));}
-  function applyAppLinks(){
-    const map=loadAppLinks();
-    document.querySelectorAll('.app[data-key]').forEach(a=>{
-      const key=a.getAttribute('data-key'); const url=map[key];
-      if(url){ a.href=url; a.target='_blank'; a.rel='noopener noreferrer'; a.title=(a.title||key)+' (열기)'; }
-    });
-  }
-  function openAL(){
-    $alm.style.display='flex';
-    $alm.setAttribute('aria-hidden','false');
-    const map=loadAppLinks();
-    const keys=[...document.querySelectorAll('.app[data-key]')].map(a=>a.getAttribute('data-key'));
-    const lines=keys.map(k=>`${k},${map[k]||''}`).join('\n');
-    $alt.value='key,url\n'+lines;
-    $alt.focus();
-  }
-  function closeAL(){ $alm.style.display='none'; $alm.setAttribute('aria-hidden','true'); }
-  function parseLinksCSV(text){
-    const rows=text.trim().split(/\r?\n/).map(r=>r.split(',').map(s=>s.trim()));
-    if(rows.length && /^key$/i.test(rows[0][0])) rows.shift();
-    const out={}; rows.forEach(([k,u])=>{ if(k) out[k]=u||'#'; }); return out;
-  }
-
-  $alb.addEventListener('click',openAL);
-  $alc.addEventListener('click',closeAL);
-  $alm.addEventListener('click',e=>{ if(e.target.id==='app-links-modal') closeAL(); });
-  $ala.addEventListener('click',()=>{
-    const parsed=parseLinksCSV($alt.value);
-    if(!Object.keys(parsed).length){alert('데이터가 없습니다.');return;}
-    const merged={...loadAppLinks(),...parsed};
-    saveAppLinks(merged); applyAppLinks(); closeAL();
-    alert('앱 링크가 반영되었습니다.');
-  });
-
-  applyAppLinks();
-  
 </script>
 </body>
 </html>
-
-
-
-
-
-
