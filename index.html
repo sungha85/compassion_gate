@@ -185,14 +185,6 @@
 .grid > section .folder{display:flex;flex-direction:column;height:100%;min-height:280px}
 .grid > section .apps{flex:1 1 auto}
 
-/* +N 더보기 칩 */
-.more-chip{
-  display:flex;align-items:center;justify-content:center;
-  gap:6px;height:92px;border-radius:16px;border:1px dashed #dbe1e8;
-  background:#f8fafc;color:#334155;cursor:pointer;font-size:12px;font-weight:700;
-  box-shadow:inset 0 1px 0 rgba(255,255,255,.6);
-}
-.more-chip:hover{background:#f1f5f9}
 
 /* 모달(더보기) */
 #more-modal[aria-hidden="true"]{display:none}
@@ -1117,74 +1109,13 @@
   });
 })();
 
-  /* ===================== +N 더보기 칩 + 모달 ===================== */
-(function setupMoreChips(){
-  const MAX_VISIBLE = 6; // 카드 안에서 항상 보여줄 앱 개수(원하면 8 등으로 조절)
 
-  const sections = document.querySelectorAll('#quick-grid > section .apps');
-  sections.forEach(appsEl=>{
-    const apps = [...appsEl.querySelectorAll('.app')];
-    const hidden = apps.slice(MAX_VISIBLE);
-    if(hidden.length === 0) return;
-
-    // 숨길 것들 접기
-    hidden.forEach(a=>a.style.display='none');
-
-    // +N 칩 삽입
-    const chip = document.createElement('button');
-    chip.type = 'button';
-    chip.className = 'more-chip';
-    chip.setAttribute('aria-haspopup', 'dialog');
-    chip.innerHTML = `+${hidden.length} 더보기`;
-    appsEl.appendChild(chip);
-
-    // 칩 클릭 → 모달에 해당 그룹의 "모든 앱" 그리드로 렌더
-    chip.addEventListener('click', ()=>{
-      const modal = document.getElementById('more-modal');
-      const grid  = document.getElementById('more-grid');
-      const title = document.getElementById('more-title');
-
-      // 그룹 캡션(바로 아래 folder-label의 텍스트) 읽기
-      const groupLabel = appsEl.closest('section')?.querySelector('.folder-label span')?.textContent?.trim() || '앱 목록';
-      title.textContent = groupLabel;
-
-      grid.innerHTML = '';
-      apps.forEach(a=>{
-        const card = document.createElement('a');
-        card.className = 'more-app';
-        card.href = a.href || '#';
-        card.target = a.target || '_blank';
-        if(a.rel) card.rel = a.rel;
-
-        // 배지/라벨 복제
-        const b = a.querySelector('.badge')?.cloneNode(true);
-        const l = a.querySelector('.label')?.cloneNode(true);
-        if(b) card.appendChild(b);
-        if(l) card.appendChild(l);
-
-        grid.appendChild(card);
-      });
-
-      // 모달 표시
-      modal.setAttribute('aria-hidden','false');
-      modal.style.display='flex';
-      document.body.style.overflow='hidden';
-      document.getElementById('more-close').focus();
-    });
-  });
-
-  // 모달 닫기
-  const m = document.getElementById('more-modal');
-  const close = ()=>{ m.setAttribute('aria-hidden','true'); m.style.display='none'; document.body.style.overflow=''; };
-  document.getElementById('more-close').addEventListener('click', close);
-  m.addEventListener('click', e=>{ if(e.target.id === 'more-modal') close(); });
-  document.addEventListener('keydown', e=>{ if(m.getAttribute('aria-hidden')==='false' && e.key==='Escape') close(); });
-})();
 
   
 </script>
 </body>
 </html>
+
 
 
 
