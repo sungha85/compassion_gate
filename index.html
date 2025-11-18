@@ -91,6 +91,125 @@
     .grid,.imgbox,.hint,h1,.controls,.sp-hero{display:none}
     .year-grid{border:0}
   }
+/* ===== Tooltip (개선 버전) ===== */
+.tooltip{
+  position: fixed;
+  z-index: 9999;
+  max-width: 240px;             /* 고정 최대폭 */
+  padding: 10px 12px;
+  font-size: 12px;
+  line-height: 1.5;
+  border-radius: 10px;
+  background: #fff;
+  color: #111827;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 10px 24px rgba(0,0,0,.16);
+  pointer-events: none;
+  opacity: 0;
+  transform: translateY(-6px) scale(.98);
+  transition: opacity .14s ease, transform .14s ease;
+
+  /* 길게 늘어지지 않도록 */
+  white-space: normal;
+  word-break: keep-all;          /* 한글 단어 유지 */
+  overflow-wrap: anywhere;       /* 긴 URL 같은 건 줄바꿈 */
+  text-align: left;
+}
+
+/* 보이기 */
+.tooltip[data-show="true"]{
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+/* 화살표 */
+.tooltip::after{
+  content:"";
+  position:absolute;
+  left:50%;
+  transform: translateX(-50%);
+  border:6px solid transparent;
+  filter: drop-shadow(0 2px 2px rgba(0,0,0,.08));
+}
+
+/* 위쪽 배치(기본) — 화살표가 아래를 향함 */
+.tooltip[data-pos="top"]::after{
+  bottom:-12px;
+  border-top-color:#fff;
+}
+
+/* 아래쪽 배치 — 화살표가 위를 향함 */
+.tooltip[data-pos="bottom"]::after{
+  top:-12px;
+  border-bottom-color:#fff;
+}
+
+  /* === 카드 높이 통일: grid-item(section)와 .folder를 늘려서 맞춤 === */
+.grid > section{ display:flex; flex-direction:column; height:100%; }
+.grid > section .folder{ display:flex; flex-direction:column; height:100%; }
+.grid > section .apps{ flex:1 1 auto; }           /* 아이콘 영역이 남는 높이를 차지 */
+
+/* (선택) 아이콘 그리드가 항상 고르게 보이게 */
+.grid > section .apps{ display:grid; grid-template-columns:repeat(3,1fr); gap:10px; }
+
+/* (선택) “모~든 카드 높이를 완전히 동일”하게 강제하고 싶다면 값 하나로 통일 */
+.grid > section .folder{ min-height:260px; }       /* ⑤ 카드 공통 최소높이(원하면 숫자 조절) */
+
+  /* === 카드 높이 통일 + 더보기 칩 === */
+.grid > section{display:flex;flex-direction:column;height:100%}
+.grid > section .folder{display:flex;flex-direction:column;height:100%;min-height:280px}
+.grid > section .apps{flex:1 1 auto}
+
+
+/* 모달(더보기) */
+#more-modal[aria-hidden="true"]{display:none}
+#more-modal{
+  position:fixed;inset:0;z-index:70;display:flex;align-items:center;justify-content:center;
+  padding:20px;background:rgba(0,0,0,.45)
+}
+.more-box{
+  background:#fff;border:1px solid var(--grid);border-radius:14px;max-width:780px;width:100%;
+  padding:16px;box-shadow:0 10px 30px rgba(0,0,0,.15)
+}
+.more-title{margin:0 0 10px;font-size:16px}
+.more-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:14px}
+.more-app{
+  display:flex;flex-direction:column;align-items:center;gap:8px;padding:12px;border:1px solid #eef2f6;
+  border-radius:12px;background:#fafafa
+}
+.more-app .badge{transform:none} /* 모달 안에선 점프 효과 제거 */
+.more-footer{display:flex;gap:8px;justify-content:flex-end;margin-top:14px}
+
+/* === 6칸 고정 슬롯(3x2) + 반응형 === */
+.grid > section{display:flex;flex-direction:column;height:100%}
+.grid > section .folder{display:flex;flex-direction:column;height:100%;min-height:280px}
+.grid > section .apps{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:10px;
+}
+@media (max-width: 900px){ .grid > section .apps{ grid-template-columns:repeat(2,1fr);} }
+@media (max-width: 520px){ .grid > section .apps{ grid-template-columns:1fr;} }
+
+/* 슬롯: 앱/더보기/빈칸 모두 같은 높이로 */
+.app, .more-tile, .slot-empty{
+  display:flex;align-items:center;justify-content:center;flex-direction:column;gap:6px;min-height:92px;
+}
+
+/* 더보기 타일(앱과 동일 사이즈로 표시) */
+.more-tile{
+  border-radius:16px;border:1px dashed #dbe1e8;background:#f8fafc;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.6);
+  cursor:pointer;font-weight:700;
+}
+.more-tile:hover{background:#f1f5f9}
+
+/* 빈 슬롯(자리만 차지하고 보이지 않음) */
+.slot-empty{ visibility:hidden; }
+/* === 모달 표시 보강 === */
+#more-modal { display: flex; z-index:9999; }                     /* 기본 표시를 flex로 (안보이는 문제 방지) */
+#more-modal[aria-hidden="true"] { display: none; } /* 닫을 때만 숨기기 */
+  
 </style>
 </head>
 <body>
@@ -98,7 +217,7 @@
 
   <!-- 상단 타이틀 -->
   <h1 class="title-strip">
-    <span>바로가기</span>
+    <span>컴패션 즐겨찾기</span>
     <button id="app-links-btn" class="btn ghost" type="button">앱 링크</button>
   </h1>
 
@@ -232,6 +351,16 @@
       <button type="button" role="tab" data-group="신청" aria-pressed="false">신청</button>
     </div>
   </div>
+  <!-- 연/월 컨트롤 -->
+  <div class="cal-controls">
+    <button class="btn" id="prev-month" title="이전 달">◀</button>
+    <select id="year-select" aria-label="연도 선택"></select>
+    <div class="seg" id="month-buttons" role="tablist" aria-label="월 선택"></div>
+    <button class="btn" id="next-month" title="다음 달">▶</button>
+    <label style="margin-left:auto;display:flex;align-items:center;gap:6px;">
+      <input type="checkbox" id="toggle-annual"> 연간 보기
+    </label>
+  </div>
 
   <!-- 연간 매트릭스 -->
   <div class="card year-grid" style="margin-top:8px" id="year-grid" aria-labelledby="year-title">
@@ -249,7 +378,17 @@
     <div class="today-line" id="today-line" aria-hidden="true"></div>
     <div class="bar-layer" id="bar-layer"></div>
   </div>
-  <p class="hint">※ 앱 링크는 브라우저 로컬에 저장됩니다.</p>
+</div>
+
+<!-- 공용 모달 -->
+<div id="modal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="m-title" aria-describedby="m-when m-dept m-note" style="display:none;align-items:center;justify-content:center;position:fixed;inset:0;background:rgba(0,0,0,.45);padding:20px">
+  <div class="box" style="background:#fff;border-radius:14px;padding:18px;max-width:560px;width:100%;border:1px solid var(--grid);box-shadow:0 10px 30px rgba(0,0,0,.15)">
+    <h3 id="m-title" style="margin:0 0 8px;font-size:16px"></h3>
+    <p id="m-when" style="margin:6px 0 0;font-size:13px;color:#334155;white-space:pre-line"></p>
+    <p id="m-dept" style="margin:6px 0 0;font-size:13px;color:#334155;white-space:pre-line"></p>
+    <p id="m-note" style="margin:6px 0 0;font-size:13px;color:#334155;white-space:pre-line"></p>
+    <div class="modal-actions" style="display:flex;justify-content:flex-end;gap:8px;margin-top:16px"><button class="close btn" id="closeBtn">닫기 (Esc)</button></div>
+  </div>
 </div>
 
 <!-- 앱 링크 편집 모달 -->
@@ -479,6 +618,218 @@
     $("#btn-compact").setAttribute('aria-pressed', String(on));
     refresh();
   });
+
+
+
+  function refresh(){ renderBars(); }
+  window.addEventListener('resize', refresh);
+// ===== Tooltip (요소 중심 고정, top/bottom 자동 플립) =====
+(function setupTooltip(){
+  const tip = document.createElement('div');
+  tip.className = 'tooltip';
+  tip.setAttribute('role', 'tooltip');
+  tip.setAttribute('aria-hidden', 'true');
+  document.body.appendChild(tip);
+
+  let activeEl = null;
+
+  function placeTipFor(el){
+    if(!el) return;
+    const rect = el.getBoundingClientRect();
+    const margin = 10;       // 화면 모서리 여백
+    const gap = 10;          // 요소와 툴팁 간격
+
+    // 먼저 가운데 정렬로 놓고 크기 측정
+    tip.style.left = `${rect.left + rect.width/2}px`;
+    tip.style.top  = `${rect.top - gap}px`;
+    tip.style.transform = 'translate(-50%, -100%)'; // 위쪽 기준
+    tip.dataset.pos = 'top';
+
+    // 레이아웃 계산 후 화면 밖이면 아래쪽으로 플립
+    const r = tip.getBoundingClientRect();
+    if(r.top < margin){
+      tip.style.top = `${rect.bottom + gap}px`;
+      tip.style.transform = 'translate(-50%, 0)';   // 아래쪽 기준
+      tip.dataset.pos = 'bottom';
+    }
+
+    // 좌우도 화면 밖이면 살짝 안쪽으로 보정
+    const r2 = tip.getBoundingClientRect();
+    let left = r2.left, right = r2.right, vw = window.innerWidth;
+    let dx = 0;
+    if(left < margin) dx = margin - left;
+    else if(right > vw - margin) dx = (vw - margin) - right;
+    if(dx !== 0){
+      const currentLeft = parseFloat(tip.style.left);
+      tip.style.left = `${currentLeft + dx}px`;
+    }
+  }
+
+  function showTip(el){
+    const text = el.getAttribute('data-tooltip');
+    if(!text) return;
+    activeEl = el;
+    tip.textContent = text;
+    tip.dataset.show = 'true';
+    tip.setAttribute('aria-hidden', 'false');
+    placeTipFor(el);
+  }
+
+  function hideTip(){
+    activeEl = null;
+    tip.dataset.show = 'false';
+    tip.setAttribute('aria-hidden', 'true');
+  }
+
+  // 이벤트 위임: 마우스
+  document.addEventListener('mouseover', e=>{
+    const el = e.target.closest('[data-tooltip]');
+    if(!el) return;
+    showTip(el);
+  });
+  document.addEventListener('mouseout', e=>{
+    if(activeEl && !e.relatedTarget?.closest('[data-tooltip]')) hideTip();
+  });
+
+  // 키보드 접근성
+  document.addEventListener('focusin', e=>{
+    const el = e.target.closest('[data-tooltip]');
+    if(!el) return;
+    showTip(el);
+  });
+  document.addEventListener('focusout', e=>{
+    if(e.target.closest('[data-tooltip]')) hideTip();
+  });
+
+  // 리사이즈/스크롤 시 위치 재계산
+  ['scroll','resize'].forEach(type=>{
+    window.addEventListener(type, ()=>{
+      if(activeEl && tip.dataset.show === 'true') placeTipFor(activeEl);
+    }, { passive:true });
+  });
+})();
+
+  
+  // 최초 빌드/렌더
+  buildGrid();
+  refresh();
+
+  /* ===================== 앱 링크 편집(선택기능) ===================== */
+  const APP_LINKS_LS='portal:app_links:v2';
+  const $alb=document.getElementById('app-links-btn'),
+        $alm=document.getElementById('app-links-modal'),
+        $alt=document.getElementById('app-links-text'),
+        $ala=document.getElementById('app-links-apply'),
+        $alc=document.getElementById('app-links-cancel');
+
+  function loadAppLinks(){try{const s=localStorage.getItem(APP_LINKS_LS);return s?JSON.parse(s):{};}catch(e){return {};} }
+  function saveAppLinks(map){localStorage.setItem(APP_LINKS_LS,JSON.stringify(map));}
+  function applyAppLinks(){
+    const map=loadAppLinks();
+    document.querySelectorAll('.app[data-key]').forEach(a=>{
+      const key=a.getAttribute('data-key'); const url=map[key];
+      if(url){ a.href=url; a.target='_blank'; a.rel='noopener noreferrer'; a.title=(a.title||key)+' (열기)'; }
+    });
+  }
+  function openAL(){
+    $alm.style.display='flex';
+    $alm.setAttribute('aria-hidden','false');
+    const map=loadAppLinks();
+    const keys=[...document.querySelectorAll('.app[data-key]')].map(a=>a.getAttribute('data-key'));
+    const lines=keys.map(k=>`${k},${map[k]||''}`).join('\n');
+    $alt.value='key,url\n'+lines;
+    $alt.focus();
+  }
+  function closeAL(){ $alm.style.display='none'; $alm.setAttribute('aria-hidden','true'); }
+  function parseLinksCSV(text){
+    const rows=text.trim().split(/\r?\n/).map(r=>r.split(',').map(s=>s.trim()));
+    if(rows.length && /^key$/i.test(rows[0][0])) rows.shift();
+    const out={}; rows.forEach(([k,u])=>{ if(k) out[k]=u||'#'; }); return out;
+  }
+
+  $alb.addEventListener('click',openAL);
+  $alc.addEventListener('click',closeAL);
+  $alm.addEventListener('click',e=>{ if(e.target.id==='app-links-modal') closeAL(); });
+  $ala.addEventListener('click',()=>{
+    const parsed=parseLinksCSV($alt.value);
+    if(!Object.keys(parsed).length){alert('데이터가 없습니다.');return;}
+    const merged={...loadAppLinks(),...parsed};
+    saveAppLinks(merged); applyAppLinks(); closeAL();
+    alert('앱 링크가 반영되었습니다.');
+  });
+
+  applyAppLinks();
+  /* ===================== +N 더보기 칩 + 모달 ===================== */
+(function setupMoreChips(){
+  const MAX_VISIBLE = 6; // 카드 안에서 항상 보여줄 앱 개수(원하면 8 등으로 조절)
+
+  const sections = document.querySelectorAll('#quick-grid > section .apps');
+  sections.forEach(appsEl=>{
+    const apps = [...appsEl.querySelectorAll('.app')];
+    const hidden = apps.slice(MAX_VISIBLE);
+    if(hidden.length === 0) return;
+
+    // 숨길 것들 접기
+    hidden.forEach(a=>a.style.display='none');
+
+    // +N 칩 삽입
+    const chip = document.createElement('button');
+    chip.type = 'button';
+    chip.className = 'more-chip';
+    chip.setAttribute('aria-haspopup', 'dialog');
+    chip.innerHTML = `+${hidden.length} 더보기`;
+    appsEl.appendChild(chip);
+
+    // 칩 클릭 → 모달에 해당 그룹의 "모든 앱" 그리드로 렌더
+    chip.addEventListener('click', ()=>{
+      const modal = document.getElementById('more-modal');
+      const grid  = document.getElementById('more-grid');
+      const title = document.getElementById('more-title');
+
+      // 그룹 캡션(바로 아래 folder-label의 텍스트) 읽기
+      const groupLabel = appsEl.closest('section')?.querySelector('.folder-label span')?.textContent?.trim() || '앱 목록';
+      title.textContent = groupLabel;
+
+      grid.innerHTML = '';
+      apps.forEach(a=>{
+        const card = document.createElement('a');
+        card.className = 'more-app';
+        card.href = a.href || '#';
+        card.target = a.target || '_blank';
+        if(a.rel) card.rel = a.rel;
+
+        // 배지/라벨 복제
+        const b = a.querySelector('.badge')?.cloneNode(true);
+        const l = a.querySelector('.label')?.cloneNode(true);
+        if(b) card.appendChild(b);
+        if(l) card.appendChild(l);
+
+        grid.appendChild(card);
+      });
+
+      // 모달 표시
+      modal.setAttribute('aria-hidden','false');
+      modal.style.display='flex';
+      document.body.style.overflow='hidden';
+      document.getElementById('more-close').focus();
+    });
+  });
+
+  // 모달 닫기
+  const m = document.getElementById('more-modal');
+  const close = ()=>{ m.setAttribute('aria-hidden','true'); m.style.display='none'; document.body.style.overflow=''; };
+  document.getElementById('more-close').addEventListener('click', close);
+  m.addEventListener('click', e=>{ if(e.target.id === 'more-modal') close(); });
+  document.addEventListener('keydown', e=>{ if(m.getAttribute('aria-hidden')==='false' && e.key==='Escape') close(); });
+})();
+
+  
 </script>
 </body>
 </html>
+
+
+
+
+
+
